@@ -2,7 +2,6 @@ import express, { Application } from "express";
 import morgan from "morgan";
 
 // Routes
-import database from "./database";
 import IndexRouter from "./routes/index.routes";
 
 export class App {
@@ -34,7 +33,6 @@ export class App {
   }
 
   async listen() {
-    database({ db: this.db });
     await this.app.listen(this.app.get("port"));
     console.log("SERVER ON PORT", this.app.get("port"));
   }
