@@ -1,8 +1,18 @@
-import { App } from './app'
+import { App } from "./app";
 
-async function main(){
-    const app = new App();
-    await app.listen();
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+
+const serviceAccount = require("../permissions.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://restapi-js.firebaseio.com",
+});
+
+function main() {
+  const app = new App();
+  return app.getApp();
 }
 
-main();
+export const app = functions.https.onRequest(main());

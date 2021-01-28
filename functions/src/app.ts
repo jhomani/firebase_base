@@ -6,11 +6,9 @@ import IndexRouter from "./routes/index.routes";
 
 export class App {
   private app: Application;
-  private db: string;
 
   constructor(private port?: number | string) {
     this.app = express();
-    this.db = "mongodb://localhost:27017/test";
     this.settings();
     this.middlewares();
     this.routes();
@@ -35,5 +33,9 @@ export class App {
   async listen() {
     await this.app.listen(this.app.get("port"));
     console.log("SERVER ON PORT", this.app.get("port"));
+  }
+
+  getApp() {
+    return this.app;
   }
 }
