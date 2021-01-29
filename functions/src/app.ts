@@ -2,7 +2,7 @@ import express, { Application } from "express";
 import morgan from "morgan";
 
 // Routes
-import IndexRouter from "./routes/index.routes";
+import UserRouter from "./routes/user.routes";
 
 export class App {
   private app: Application;
@@ -19,7 +19,7 @@ export class App {
   }
 
   routes() {
-    this.app.use("/", IndexRouter);
+    this.app.use("/users", UserRouter);
   }
 
   middlewares() {
