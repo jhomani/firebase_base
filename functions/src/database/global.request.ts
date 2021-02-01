@@ -1,4 +1,4 @@
-import db from './connect';
+import { db } from './connect';
 
 export default class GlobalReq {
   private nameCollection: string;
@@ -41,7 +41,7 @@ export default class GlobalReq {
     }
   }
 
-  public setFilds() {
+  public setFields() {
     let selected = [];
     let unSelected = [];
 
@@ -53,7 +53,7 @@ export default class GlobalReq {
     if (selected.length !== 0)
       this.collection = this.collection.select(...selected);
     else {
-      for (let field in this.schema) {
+      for (let field of this.schema) {
         let add = true;
 
         unSelected.forEach(elem => {
@@ -88,7 +88,7 @@ export default class GlobalReq {
     try {
       this.setWhere();
       this.setPrimitiveData();
-      this.setFilds();
+      this.setFields();
 
       let datas = (await this.collection.get()).docs;
       this.resetValues();
@@ -103,7 +103,10 @@ export default class GlobalReq {
     }
   }
 
-  async getSingleDoc(id: string) {
+  async getSingleDoc(id: string, filter: any = {}) {
+    let { fields } = filter;
+    this.fields = fields || {};
+
     try {
       let resp = await this.collection.doc(id).get();
 
@@ -153,6 +156,8 @@ export default class GlobalReq {
       await this.collection.doc(id).update({
         ...value
       });
+
+      return { msg: "successful updated!" }
     } catch (error) {
       console.log(error.message)
 

@@ -5,51 +5,93 @@ import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
 import { UserComplete } from '../interface/user.interface';
+import storage from "../storage/index";
 
 let users = new UserResquest('users', schema);
 
-const singleGet = async (req: Request, res: Response) => {
+export const singleGet = async (req: Request, res: Response) => {
+  try {
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
+    const { password, ...others } = await users.getSingleDoc(req.params.id, filter);
+
+    return res.json(others);
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
 }
 
-const countMethod = async (req: Request, res: Response) => {
+export const countMethod = async (req: Request, res: Response) => {
+  try {
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
+    const size = await users.countDocuments(filter);
+
+    return res.json({ count: size });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
 }
 
-const getMeUser = async (req: Request, res: Response) => {
+export const getMeUser = async (req: Request, res: Response) => {
+  try {
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
+    const { password, ...others } = await users.getSingleDoc(storage.getUserId(), filter);
+
+    return res.json(others);
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
 }
 
 export const getMethod = async (req: Request, res: Response) => {
-  let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
+  try {
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
-  const arrRes = await users.getCollection(filter);
+    const arrRes = await users.getCollection(filter);
 
-  return res.json(arrRes);
+    let builded = arrRes.map(({ password, ...others }) => ({ ...others }))
+
+    return res.json(builded);
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
 }
 
-const logoutMethod = async (req: Request, res: Response) => {
+export const logoutMethod = async (req: Request, res: Response) => {
+  storage.setUserId('logouted!');
 
+  res.json({ msg: "successful logouted!" });
 }
 
 export const loginMethod = async (req: Request, res: Response) => {
   try {
     const { password, email } = await loginSchema.validateAsync(req.body);
-    let obj: UserComplete = await users.userToVerify(email);
+    let obj: any = await users.userToVerify(email);
 
     const result = await bcrypt.compare(password, obj.password);
 
     if (result) {
       const claims = { sub: obj.id, name: obj.name }
+      storage.setUserId(obj.id);
 
-      const jwt = JWT.sign(claims, secret, { expiresIn: '1h' });
+      const jwt = JWT.sign(claims, secret, { expiresIn: '1h', jwtid: obj.id });
 
       return res.json({ authToken: jwt, name: obj.name });
     } else throw new Error('incorrent credentials')
   } catch (err) {
-    let msg = err.details ? err.details[0].message : err.message
+    let msg = err.details ? err.details : err.message
 
-    if (err.details) return res.status(422).json({ msg });
+    if (err.details) return res.status(422).json(msg);
     else return res.status(401).json({ msg });
   }
 }
@@ -63,17 +105,42 @@ export const registerMethod = async (req: Request, res: Response) => {
 
     return res.json(others);
   } catch (err) {
-    let msg = err.details ? err.details[0].message : err.message
+    let msg = err.details ? err.details : err.message
 
-    if (err.details) return res.status(422).json({ msg });
+    if (err.details) return res.status(422).json(msg);
     else return res.status(500).json({ msg });
   }
 }
 
-const patchMethod = async (req: Request, res: Response) => {
+export const patchMethod = async (req: Request, res: Response) => {
+  try {
+    if (!req.params.id) throw new Error('id is required');
+
+    const value = await patchSchema.validateAsync(req.body);
+
+    let obj = await users.setDocument(req.params.id, value);
+
+    return res.json(obj);
+  } catch (err) {
+    let msg = err.details ? err.details : err.message
+
+    if (err.details) return res.status(422).json(msg);
+    else return res.status(500).json({ msg });
+  }
 
 }
 
-const deleteMethod = async (req: Request, res: Response) => {
+export const deleteMethod = async (req: Request, res: Response) => {
+  try {
+    if (!req.params.id) throw new Error('id is required');
+
+    await users.deleteDocument(req.params.id);
+
+    return res.json({ msg: 'success deleted' });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
 }
 

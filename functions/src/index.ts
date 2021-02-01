@@ -7,4 +7,7 @@ function main() {
   return app.getApp();
 }
 
+
+// let ap = main();
+// ap.listen(3000)
 export const app = functions.https.onRequest(main());

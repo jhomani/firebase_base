@@ -3,9 +3,12 @@ import admin from 'firebase-admin';
 const serviceAccount = require('../../permissions.json');
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://its-mine-f713b-default-rtdb.firebaseio.com",
+  storageBucket: "gs://its-mine-f713b.appspot.com",
 });
 
-let db: any = admin.firestore();
+export let db: any = admin.firestore();
+export let buckets = admin.storage().bucket();
 
-export default db;
+// export default { db, storage };

@@ -3,7 +3,7 @@ import { User } from '../interface/user.interface'
 import { UserComplete } from '../interface/user.interface'
 
 export default class UserResquest extends GlobalReq {
-  constructor(collection: string, schema: User) {
+  constructor(collection: string, schema: Array<string>) {
     super(collection, schema);
   }
 

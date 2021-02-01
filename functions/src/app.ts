@@ -1,8 +1,15 @@
 import express, { Application } from "express";
 import morgan from "morgan";
+import path from "path";
+// import multer from 'multer';
+const multer = require('multer');
+
+const upload = multer();
 
 // Routes
-import UserRouter from "./routes/user.routes";
+import UserRouter from "./routes/users.routes";
+import Objects from "./routes/objects.routes";
+import UploadFiles from "./routes/upload-files.routes";
 
 export class App {
   private app: Application;
@@ -20,6 +27,8 @@ export class App {
 
   routes() {
     this.app.use("/users", UserRouter);
+    this.app.use("/objects", Objects);
+    this.app.use("/upload-files", UploadFiles);
   }
 
   middlewares() {
@@ -27,6 +36,8 @@ export class App {
 
     this.app.use(morgan("dev")); // PARA DECIRLE AL SERVIDOR QUE ESTARÁS ESCUCHANDO
     this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use('/public', express.static(path.join(__dirname, "../public")));
     this.app.use(cors());
   }
 
@@ -34,7 +45,6 @@ export class App {
     await this.app.listen(this.app.get("port"));
     console.log("SERVER ON PORT", this.app.get("port"));
   }
-
   getApp() {
     return this.app;
   }

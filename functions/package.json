@@ -3,11 +3,11 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --w",
-    "nodemon": "nodemon --exec firebase serve --only functions",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "nodemon": "nodemon --exec firebase serve ",
+    "serve": "npm run build && firebase emulators:start ",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
+    "deploy": "firebase deploy ",
     "logs": "firebase functions:log",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.ts --exec ts-node"
@@ -18,16 +18,19 @@
   "main": "dist/src/index.js",
   "dependencies": {
     "bcrypt": "^5.0.0",
+    "busboy": "^0.3.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "firebase-admin": "^9.2.0",
     "firebase-functions": "^3.11.0",
     "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^1.4.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
+    "@types/busboy": "^0.2.3",
     "@types/express": "^4.17.6",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/morgan": "^1.9.1",
