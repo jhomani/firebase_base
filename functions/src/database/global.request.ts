@@ -169,6 +169,7 @@ export default class GlobalReq {
     try {
       const resp = await this.collection.doc(id).get();
 
+
       if (!resp.exists) throw new Error();
       else await this.collection.doc(id).delete();
     } catch (error) {

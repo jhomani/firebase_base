@@ -1,9 +1,8 @@
-import ObjectRequest from '../database/object.request';
+import GlobalReq from '../database/global.request';
 import { fieldsSchema, postSchema, patchSchema } from '../models/object.models';
 import { Request, Response } from "express";
-import { buckets } from "../database/connect";
 
-const objects = new ObjectRequest('objects', fieldsSchema);
+const objects = new GlobalReq('objects', fieldsSchema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {

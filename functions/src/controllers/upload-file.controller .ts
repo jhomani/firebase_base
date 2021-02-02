@@ -1,10 +1,8 @@
 import GlobalReq from '../database/global.request';
 import { fieldsSchema, postSchema, patchSchema } from '../models/upload-file.models';
 import { Request, Response } from "express";
-import { buckets } from "../database/connect";
+import { myBucket } from "../database/connect";
 import Busbou from 'busboy';
-import fs from 'fs'
-import path from 'path'
 
 const uploadFiles = new GlobalReq('upload-files', fieldsSchema);
 
@@ -37,6 +35,8 @@ export const countMethod = async (req: Request, res: Response) => {
 }
 
 export const getMethod = async (req: Request, res: Response) => {
+
+
   try {
     let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
@@ -54,27 +54,16 @@ export const postMethod = async (req: any, res: Response) => {
   try {
     const busboy = new Busbou({ headers: req.headers });
     let newFileName: Array<string> = [];
+    let idFile = (new Date).getTime().toString();
 
     let fields: any = {};
     let i: number = 0;
 
-    busboy.on("file", (field, file, fileName) => {
-      newFileName.push(`${(new Date).getTime().toString()}.${fileName.split('.')[1]}`);
-      const filePath = path.join(__dirname, "../../public/objs-images/", newFileName[i]);
-      newFileName[i] = `/public/objs-images/${newFileName[i]}`
+    busboy.on("file", async (_, file, fileName) => {
+      newFileName.push(`https://storage.googleapis.com/its-mine-storage/images/objects/${idFile}/${i}_${fileName}`);
+
+      file.pipe(myBucket.file(`images/objects/${idFile}/${i}_${fileName}`).createWriteStream())
       i++
-
-      const writeStream = fs.createWriteStream(filePath);
-
-      file.on("data", async (data) => {
-        writeStream.end(data)
-
-        // await buckets.file(newFileName[0]).createWriteStream().end(data);
-      })
-
-      file.on("end", () => {
-        writeStream.on("error", (err) => { console.log(err) });
-      })
     })
 
     busboy.on("field", (field, value) => {
@@ -93,9 +82,10 @@ export const postMethod = async (req: any, res: Response) => {
           arrForResp.push({ id, link: ele });
         }
 
-        return res.json(arrForResp);
-      } catch (err) {
 
+        if (arrForResp.length == 1) return res.json(arrForResp[0]);
+        else return res.json(arrForResp);
+      } catch (err) {
         return res.status(422).json(err.details || { msg: err.message });
       }
     });
@@ -113,11 +103,13 @@ export const postMethod = async (req: any, res: Response) => {
 export const deleteMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
+    let { link } = await uploadFiles.getSingleDoc(req.params.id);
+    let arLink = link.split("/");
+    let leng = arLink.length;
+    let path = `images/objects/${arLink[leng - 2]}/${arLink[leng - 1]}`
 
-    // let value = await uploadFiles.getSingleDoc(req.params.id);
-
+    await myBucket.file(path).delete();
     await uploadFiles.deleteDocument(req.params.id);
-    // await buckets.file(value.link).delete();
 
     return res.json({ msg: 'success deleted' });
   } catch (err) {

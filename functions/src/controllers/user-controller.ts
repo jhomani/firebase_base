@@ -84,7 +84,7 @@ export const loginMethod = async (req: Request, res: Response) => {
       const claims = { sub: obj.id, name: obj.name }
       storage.setUserId(obj.id);
 
-      const jwt = JWT.sign(claims, secret, { expiresIn: '1h', jwtid: obj.id });
+      const jwt = JWT.sign(claims, secret, { expiresIn: '7h', jwtid: obj.id });
 
       return res.json({ authToken: jwt, name: obj.name });
     } else throw new Error('incorrent credentials')
