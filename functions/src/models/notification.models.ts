@@ -1,20 +1,25 @@
 import Joi from 'joi';
 
 export const fieldsSchema: Array<string> = [
-  "slug",
-  "link",
+  "type",
+  "content",
+  "image",
   "userId",
-  "objectId",
+  "radioLocate",
 ];
 
 export const postSchema = Joi.object({
-  slug: Joi.string(),
+  type: Joi.string().required(),
+  content: Joi.string().required(),
+  images: Joi.object(),
   userId: Joi.string(),
-  objectId: Joi.string(),
+  radioLocate: Joi.number(),
 }).options({ abortEarly: false });
 
 export const patchSchema = Joi.object({
-  slug: Joi.string(),
+  type: Joi.string(),
+  content: Joi.string(),
+  images: Joi.object(),
   userId: Joi.string(),
-  objectId: Joi.string(),
+  radioLocate: Joi.number(),
 }).options({ abortEarly: false });

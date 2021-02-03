@@ -10,6 +10,8 @@ const upload = multer();
 import UserRouter from "./routes/users.routes";
 import Objects from "./routes/objects.routes";
 import UploadFiles from "./routes/upload-files.routes";
+import Notifications from "./routes/notifications.routes";
+import References from "./routes/references.routes";
 
 export class App {
   private app: Application;
@@ -29,6 +31,8 @@ export class App {
     this.app.use("/users", UserRouter);
     this.app.use("/objects", Objects);
     this.app.use("/upload-files", UploadFiles);
+    this.app.use("/notifications", Notifications);
+    this.app.use("/references", References);
   }
 
   middlewares() {

@@ -16,7 +16,7 @@ export const fieldsSchema: Array<string> = [
   "favorite",
 ];
 
-export const postSchema: any = Joi.object({
+export const postSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required(),
   locate: Joi.array().items(Joi.number()),
@@ -31,7 +31,7 @@ export const postSchema: any = Joi.object({
   state: Joi.string(),
 }).options({ abortEarly: false });
 
-export const patchSchema: any = Joi.object({
+export const patchSchema = Joi.object({
   name: Joi.string(),
   description: Joi.string(),
   locate: Joi.array().items(Joi.number()),
