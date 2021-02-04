@@ -3,7 +3,7 @@ import Joi from 'joi';
 export const fieldsSchema: Array<string> = [
   "type",
   "content",
-  "image",
+  "avatar",
   "userId",
   "radioLocate",
 ];
@@ -11,7 +11,7 @@ export const fieldsSchema: Array<string> = [
 export const postSchema = Joi.object({
   type: Joi.string().required(),
   content: Joi.string().required(),
-  images: Joi.object(),
+  avatar: Joi.object(),
   userId: Joi.string(),
   radioLocate: Joi.number(),
 }).options({ abortEarly: false });
@@ -19,7 +19,7 @@ export const postSchema = Joi.object({
 export const patchSchema = Joi.object({
   type: Joi.string(),
   content: Joi.string(),
-  images: Joi.object(),
+  avatar: Joi.object(),
   userId: Joi.string(),
   radioLocate: Joi.number(),
 }).options({ abortEarly: false });

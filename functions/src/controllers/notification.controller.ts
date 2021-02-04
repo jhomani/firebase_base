@@ -1,6 +1,7 @@
 import GlobalReq from '../database/global.request';
 import { fieldsSchema, postSchema, patchSchema } from '../models/notification.models';
 import { Request, Response } from "express";
+import { db, myBucket } from "../database/connect"
 
 const notifications = new GlobalReq('notifications', fieldsSchema);
 
@@ -78,6 +79,31 @@ export const patchMethod = async (req: Request, res: Response) => {
 export const deleteMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
+
+    await notifications.deleteDocument(req.params.id);
+
+    return res.json({ msg: 'success deleted' });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
+export const deleteFileMethod = async (req: Request, res: Response) => {
+  try {
+    if (!req.params.id) throw new Error('id is required');
+    let { avatar } = await notifications.getSingleDoc(req.params.id);
+
+    if (avatar) {
+      let arLink = avatar.link.split('/');
+      let leng = arLink.length;
+
+      let path = `images/${arLink[leng - 2]}/`
+
+      await myBucket.deleteFiles({ prefix: path });
+      await db.collection("uploadFiles").doc(avatar.id).delete();
+    }
 
     await notifications.deleteDocument(req.params.id);
 

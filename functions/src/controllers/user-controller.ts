@@ -5,7 +5,7 @@ import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
 import storage from "../storage/index";
-import { db } from "../database/connect"
+import { db, myBucket } from "../database/connect"
 
 let users = new UserResquest('users', schema);
 
@@ -150,3 +150,27 @@ export const deleteMethod = async (req: Request, res: Response) => {
   }
 }
 
+export const deleteFileMethod = async (req: Request, res: Response) => {
+  try {
+    if (!req.params.id) throw new Error('id is required');
+    let { avatar } = await users.getSingleDoc(req.params.id);
+
+    if (avatar) {
+      let arLink = avatar.link.split('/');
+      let leng = arLink.length;
+
+      let path = `images/${arLink[leng - 2]}/`
+
+      await myBucket.deleteFiles({ prefix: path });
+      await db.collection("uploadFiles").doc(avatar.id).delete();
+    }
+
+    await users.deleteDocument(req.params.id);
+
+    return res.json({ msg: 'success deleted' });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}

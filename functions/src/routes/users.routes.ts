@@ -4,8 +4,8 @@ import { Router } from "express";
 import {
   getMethod, loginMethod,
   registerMethod, singleGet,
-  logoutMethod, deleteMethod,
-  getMeUser, patchMethod, countMethod
+  logoutMethod, deleteMethod, getMeUser,
+  patchMethod, countMethod, deleteFileMethod
 } from "../controllers/user-controller";
 
 const router = Router();
@@ -16,6 +16,7 @@ router.route("/login").post(loginMethod);
 router.route("/register").post(registerMethod);
 router.route("/logout").post(auth, logoutMethod);
 router.route("/:id").delete(auth, deleteMethod);
+router.route("/:id/file").delete(auth, deleteFileMethod);
 router.route("/me").get(auth, getMeUser);
 router.route("/:id").patch(auth, patchMethod);
 router.route("/:id").get(auth, singleGet);
