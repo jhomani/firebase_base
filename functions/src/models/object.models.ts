@@ -21,7 +21,6 @@ export const postSchema = Joi.object({
   description: Joi.string().required(),
   locate: Joi.array().items(Joi.number()),
   remuneration: Joi.number().min(10).max(1000),
-  userId: Joi.string(),
   images: Joi.array().items(Joi.object()).required(),
   lossDate: Joi.string(),
   categoryId: Joi.string(),

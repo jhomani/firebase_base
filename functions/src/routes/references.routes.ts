@@ -4,12 +4,12 @@ import { auth } from '../midlewares/authMiddle';
 
 const router = Router();
 
-router.route("/count").get(countMethod);
-router.route("/").get(getMethod);
-router.route("/:id").get(singleGet);
-router.route("/").post(postMethod);
-router.route("/:id").patch(patchMethod);
-router.route("/:id/images").delete(deleteMethod);
-router.route("/:id").delete(deleteMethod);
+router.route("/count").get(auth, countMethod);
+router.route("/").get(auth, getMethod);
+router.route("/:id").get(auth, singleGet);
+router.route("/").post(auth, postMethod);
+router.route("/:id").patch(auth, patchMethod);
+// router.route("/:id/images").delete(auth, deleteMethod);
+router.route("/:id").delete(auth, deleteMethod);
 
 export default router;

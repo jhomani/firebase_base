@@ -7,7 +7,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
   const token: any = req.headers.authorization?.split(" ")[1];
 
   try {
-    let decode: any = await verify(token, secret, { jwtid: storage.getUserId() });
+    let decode: any = await verify(token, secret);
 
     if (decode) {
       storage.setUserId(decode.sub);

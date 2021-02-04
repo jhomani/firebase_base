@@ -1,6 +1,7 @@
 import GlobalReq from '../database/global.request';
 import { fieldsSchema, postSchema, patchSchema } from '../models/object.models';
 import { Request, Response } from "express";
+import storage from "../storage/index";
 
 const objects = new GlobalReq('objects', fieldsSchema);
 
@@ -49,7 +50,7 @@ export const postMethod = async (req: Request, res: Response) => {
   try {
     let value = await postSchema.validateAsync(req.body);
 
-    let obj = await objects.addDocument(value);
+    let obj = await objects.addDocument({ ...value, userId: storage.getUserId() });
     return res.json(obj);
 
   } catch (err) {

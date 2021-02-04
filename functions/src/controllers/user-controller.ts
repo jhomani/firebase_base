@@ -4,8 +4,8 @@ import { registerSchema, loginSchema, patchSchema, schema } from '../models/user
 import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
-import { UserComplete } from '../interface/user.interface';
 import storage from "../storage/index";
+import { db } from "../database/connect"
 
 let users = new UserResquest('users', schema);
 
@@ -68,8 +68,6 @@ export const getMethod = async (req: Request, res: Response) => {
 }
 
 export const logoutMethod = async (req: Request, res: Response) => {
-  storage.setUserId('logouted!');
-
   res.json({ msg: "successful logouted!" });
 }
 
@@ -82,9 +80,8 @@ export const loginMethod = async (req: Request, res: Response) => {
 
     if (result) {
       const claims = { sub: obj.id, name: obj.name }
-      storage.setUserId(obj.id);
 
-      const jwt = JWT.sign(claims, secret, { expiresIn: '7h', jwtid: obj.id });
+      const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
 
       return res.json({ authToken: jwt, name: obj.name });
     } else throw new Error('incorrent credentials')
@@ -98,10 +95,19 @@ export const loginMethod = async (req: Request, res: Response) => {
 
 export const registerMethod = async (req: Request, res: Response) => {
   try {
-    const { password, ...other } = await registerSchema.validateAsync(req.body);
+    let { password, email, userTypeId, ...other } = await registerSchema.validateAsync(req.body);
+
+    let emailExist = await db.collection("users").where("email", "==", email).get();
+    if (!emailExist.empty) throw new Error("the email already take");
+
+    if (!userTypeId) {
+      let userType = (await db.collection("userType").where("name", "==", "client").get()).docs;
+
+      userTypeId = userType[0].id;
+    }
 
     const hash = await bcrypt.hash(password, 12);
-    let { password: psw, ...others } = await users.addDocument({ ...other, password: hash });
+    let { password: psw, ...others } = await users.addDocument({ ...other, userTypeId, email, password: hash });
 
     return res.json(others);
   } catch (err) {

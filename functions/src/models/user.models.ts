@@ -14,8 +14,8 @@ export const registerSchema = Joi.object({
   password: Joi.string().min(6).max(32).required(),
   lastName: Joi.string().required(),
   firstName: Joi.string().required(),
-  userTypeId: Joi.string().required(),
   phone: Joi.string().required(),
+  userTypeId: Joi.string(),
 }).options({ abortEarly: false });
 
 export const loginSchema = Joi.object({
