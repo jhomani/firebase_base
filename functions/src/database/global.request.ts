@@ -1,18 +1,18 @@
 import { db } from './connect';
 
 export default class GlobalReq {
-  private nameCollection: string;
+  public nameCollection: string;
   public collection: any;
-  private skip: number;
-  private limit: number;
-  private fields: any;
-  private orderBy: string;
-  private include: Array<any>;
-  private where: any;
-  private schema: any;
+  public skip: number;
+  public limit: number;
+  public fields: any;
+  public orderBy: string;
+  public include: Array<any>;
+  public where: any;
+  public schema: Array<string>;
 
 
-  constructor(collection: string, schema: any) {
+  constructor(collection: string, schema: Array<string>) {
     this.nameCollection = collection;
     this.collection = db.collection(collection);
     this.skip = 0;
