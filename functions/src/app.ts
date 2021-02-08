@@ -10,6 +10,8 @@ import Notifications from "./routes/notifications.routes";
 import References from "./routes/references.routes";
 import Chats from "./routes/chats.routes";
 import Messages from "./routes/messages.routes";
+import UserTypes from "./routes/user-types.routes";
+import ObjectTypes from "./routes/object-types.routes";
 
 
 export class App {
@@ -34,6 +36,8 @@ export class App {
     this.app.use("/references", References);
     this.app.use("/chats", Chats);
     this.app.use("/messages", Messages);
+    this.app.use("/object-types", ObjectTypes);
+    this.app.use("/user-types", UserTypes);
   }
 
   middlewares() {

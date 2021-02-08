@@ -54,7 +54,7 @@ export const postMethod = async (req: any, res: Response) => {
   try {
     const busboy = new Busbou({ headers: req.headers });
     let newFileName: Array<string> = [];
-    let idFile = (new Date).getTime().toString();
+    let idFile = Date.now().toString();
 
     let fields: any = {};
     let i: number = 0;
