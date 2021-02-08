@@ -1,16 +1,19 @@
-import GlobalReq from '../database/global.request';
-import { fieldsSchema, postSchema, patchSchema } from '../models/object.models';
+import SubCollectionReq from '../database/subcollection.request';
+import { fieldsSchema, postSchema, patchSchema } from '../models/message.models';
 import { Request, Response } from "express";
 import { db, myBucket } from "../database/connect";
 import storage from "../storage/index";
 
-const objects = new GlobalReq('objects', fieldsSchema);
+const messages = new SubCollectionReq('chats', fieldsSchema, 'messages');
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
+    if (!req.query.docId) throw new Error('docId is required');
 
-    let doc = await objects.getSingleDoc(req.params.id);
+    let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
+
+    let doc = await messages.getSingleDoc(req.params.id, docId);
 
     return res.json(doc);
   } catch (err) {
@@ -22,9 +25,12 @@ export const singleGet = async (req: Request, res: Response) => {
 
 export const countMethod = async (req: Request, res: Response) => {
   try {
-    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
+    if (!req.query.docId) throw new Error('docId is required');
 
-    const size = await objects.countDocuments(filter);
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
+    let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
+
+    const size = await messages.countDocuments(filter, docId);
     return res.json({ count: size });
   } catch (err) {
     let msg = err.message;
@@ -35,9 +41,12 @@ export const countMethod = async (req: Request, res: Response) => {
 
 export const getMethod = async (req: Request, res: Response) => {
   try {
-    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
+    if (!req.query.docId) throw new Error('docId is required');
 
-    const arrRes = await objects.getCollection(filter);
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
+    let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
+
+    const arrRes = await messages.getCollection(filter, docId);
 
     return res.json(arrRes);
   } catch (err) {
@@ -49,9 +58,12 @@ export const getMethod = async (req: Request, res: Response) => {
 
 export const postMethod = async (req: Request, res: Response) => {
   try {
-    let value = await postSchema.validateAsync(req.body);
+    if (!req.query.docId) throw new Error('docId is required');
 
-    let obj = await objects.addDocument({ ...value, userId: storage.getUserId() });
+    let value = await postSchema.validateAsync(req.body);
+    let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
+
+    let obj = await messages.addDocument({ ...value, userId: storage.getUserId() }, docId);
     return res.json(obj);
 
   } catch (err) {
@@ -65,8 +77,12 @@ export const postMethod = async (req: Request, res: Response) => {
 
 export const patchMethod = async (req: Request, res: Response) => {
   try {
+    if (!req.query.docId) throw new Error('docId is required');
+
+    let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
     let value = await patchSchema.validateAsync(req.body);
-    let obj = await objects.setDocument(req.params.id, value);
+
+    let obj = await messages.setDocument(req.params.id, value, docId);
 
     return res.json(obj);
   } catch (err) {
@@ -80,9 +96,12 @@ export const patchMethod = async (req: Request, res: Response) => {
 
 export const deleteMethod = async (req: Request, res: Response) => {
   try {
+    if (!req.query.docId) throw new Error('docId is required');
     if (!req.params.id) throw new Error('id is required');
 
-    await objects.deleteDocument(req.params.id);
+    let docId: string = typeof req.query.docId === 'string' ? req.query.docId : '';
+
+    await messages.deleteDocument(req.params.id, docId);
 
     return res.json({ msg: 'success deleted' });
   } catch (err) {
@@ -92,23 +111,26 @@ export const deleteMethod = async (req: Request, res: Response) => {
   }
 }
 
-export const deleteFilesMethod = async (req: Request, res: Response) => {
+export const deleteFileMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
-    let { images } = await objects.getSingleDoc(req.params.id);
+    if (!req.query.docId) throw new Error('docId is required');
 
-    let arLink = images[0].link.split('/');
-    let leng = arLink.length;
+    let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
 
-    let path = `images/${arLink[leng - 2]}/`
+    let { image }: any = await messages.getSingleDoc(req.params.id, docId);
 
-    await myBucket.deleteFiles({ prefix: path });
+    if (image) {
+      let arLink = image.link.split('/');
+      let leng = arLink.length;
 
-    for (let el of images) {
-      await db.collection("uploadFiles").doc(el.id).delete();
+      let path = `images/${arLink[leng - 2]}/`
+
+      await myBucket.deleteFiles({ prefix: path });
+      await db.collection("uploadFiles").doc(image.id).delete();
     }
 
-    await objects.deleteDocument(req.params.id);
+    await messages.deleteDocument(req.params.id, docId);
 
     return res.json({ msg: 'success deleted' });
   } catch (err) {

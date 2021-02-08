@@ -1,8 +1,6 @@
 import { db } from './connect';
 
-export default class GlobalReq {
-  public nameCollection: string;
-  public collection: any;
+export default class SubCollectionReq {
   public skip: number;
   public limit: number;
   public fields: any;
@@ -10,11 +8,12 @@ export default class GlobalReq {
   public include: Array<any>;
   public where: any;
   public schema: Array<string>;
+  public collection: string;
+  public subCollection: string;
 
 
-  constructor(collection: string, schema: Array<string>) {
-    this.nameCollection = collection;
-    this.collection = db.collection(collection);
+  constructor(collection: string, schema: Array<string>, subCollection: string) {
+    this.collection = collection;
     this.skip = 0;
     this.limit = 0;
     this.fields = {};
@@ -22,6 +21,7 @@ export default class GlobalReq {
     this.include = [];
     this.where = {};
     this.schema = schema;
+    this.subCollection = subCollection;
   }
 
   public resetValues() {
@@ -31,17 +31,18 @@ export default class GlobalReq {
     this.orderBy = '';
     this.include = [];
     this.where = {};
-
-    this.collection = db.collection(this.nameCollection);
   }
 
-  public setWhere() {
+  public setWhere(collection: any) {
     for (let ele in this.where) {
-      this.collection = this.collection.where(ele, '==', this.where[ele]);
+      collection = collection.where(ele, '==', this.where[ele]);
     }
+
+    return collection
   }
 
-  public setFields() {
+
+  public setFields(collection: any) {
     let selected = [];
     let unSelected = [];
 
@@ -51,7 +52,7 @@ export default class GlobalReq {
     }
 
     if (selected.length !== 0)
-      this.collection = this.collection.select(...selected);
+      collection = collection.select(...selected);
     else {
       for (let field of this.schema) {
         let add = true;
@@ -63,20 +64,26 @@ export default class GlobalReq {
         if (add) selected.push(field);
       }
 
-      this.collection = this.collection.select(...selected);
+      collection = collection.select(...selected);
     }
+
+    return collection;
   }
 
-  public setPrimitiveData() {
-    if (this.skip) this.collection = this.collection.offset(this.skip);
-    if (this.limit) this.collection = this.collection.limit(this.limit);
-    if (this.orderBy) this.collection = this.collection.orderBy(
+  public setPrimitiveData(collection: any) {
+    if (this.skip) collection = collection.offset(this.skip);
+    if (this.limit) collection = collection.limit(this.limit);
+    if (this.orderBy) collection = collection.orderBy(
       this.orderBy.split(' ')[0], this.orderBy.split(' ')[1]
     );
+
+    return collection;
   }
 
-  async getCollection(filter: any = {}) {
+  async getCollection(filter: any = {}, docId: string) {
     let { orderBy, skip, limit, fields, where, include } = filter;
+
+    let collection = db.collection(`/${this.collection}/${docId}/${this.subCollection}`);
 
     this.skip = skip || 0;
     this.limit = limit || 0;
@@ -86,11 +93,11 @@ export default class GlobalReq {
     this.orderBy = orderBy || '';
 
     try {
-      this.setWhere();
-      this.setPrimitiveData();
-      this.setFields();
+      collection = this.setWhere(collection);
+      collection = this.setPrimitiveData(collection);
+      collection = this.setFields(collection);
 
-      let datas = (await this.collection.get()).docs;
+      let datas = (await collection.get()).docs;
       this.resetValues();
 
       let resp: Array<any> = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
@@ -103,12 +110,11 @@ export default class GlobalReq {
     }
   }
 
-  async getSingleDoc(id: string, filter: any = {}) {
-    let { fields } = filter;
-    this.fields = fields || {};
+  async getSingleDoc(id: string, docId: string) {
+    let collection = db.collection(`/${this.collection}/${docId}/${this.subCollection}`);
 
     try {
-      let resp = await this.collection.doc(id).get();
+      let resp = await collection.doc(id).get();
 
       if (!resp.exists) throw new Error();
       else return ({ id: resp.id, ...resp.data() });
@@ -119,14 +125,16 @@ export default class GlobalReq {
     }
   }
 
-  async countDocuments(filter: any) {
+  async countDocuments(filter: any, docId: string) {
     let { where } = filter;
     this.where = where || {};
 
-    try {
-      this.setWhere();
+    let collection = db.collection(`/${this.collection}/${docId}/${this.subCollection}`);
 
-      let size = (await this.collection.get()).size;
+    try {
+      collection = this.setWhere(collection);
+
+      let size = (await collection.get()).size;
       this.resetValues();
 
       return size;
@@ -137,9 +145,12 @@ export default class GlobalReq {
     }
   }
 
-  async addDocument(value: any) {
+  async addDocument(value: any, docId: string) {
+
+    let collection = db.collection(`/${this.collection}/${docId}/${this.subCollection}`);
+
     try {
-      let res = await this.collection.add({
+      let res = await collection.add({
         ...value
       });
 
@@ -151,9 +162,12 @@ export default class GlobalReq {
     }
   }
 
-  async setDocument(id: string, value: any) {
+  async setDocument(id: string, value: any, docId: string) {
+
+    let collection = db.collection(`/${this.collection}/${docId}/${this.subCollection}`);
+
     try {
-      await this.collection.doc(id).update({
+      await collection.doc(id).update({
         ...value
       });
 
@@ -165,13 +179,15 @@ export default class GlobalReq {
     }
   }
 
-  async deleteDocument(id: string) {
-    try {
-      const resp = await this.collection.doc(id).get();
+  async deleteDocument(id: string, docId: string) {
 
+    let collection = db.collection(`/${this.collection}/${docId}/${this.subCollection}`);
+
+    try {
+      const resp = await collection.doc(id).get();
 
       if (!resp.exists) throw new Error();
-      else await this.collection.doc(id).delete();
+      else await collection.doc(id).delete();
     } catch (error) {
       console.log(error.message)
 

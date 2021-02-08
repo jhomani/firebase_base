@@ -13,7 +13,7 @@ let storage = new Storage({
   projectId: "colegios-285314",
 });
 
-export let db = admin.firestore();
+export let db: FirebaseFirestore.Firestore = admin.firestore();
 export let myBucket = storage.bucket("its-mine-storage");
 // export let myBucket = admin.storage().bucket();
 // export let buckets = admin.storage().bucket();

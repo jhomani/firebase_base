@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { myBucket } from "../database/connect";
 import Busbou from 'busboy';
 
-const uploadFiles = new GlobalReq('upload-files', fieldsSchema);
+const uploadFiles = new GlobalReq('uploadFiles', fieldsSchema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
@@ -54,15 +54,15 @@ export const postMethod = async (req: any, res: Response) => {
   try {
     const busboy = new Busbou({ headers: req.headers });
     let newFileName: Array<string> = [];
-    let idFile = (new Date).getTime().toString();
+    let idFile = Date.now().toString();
 
     let fields: any = {};
     let i: number = 0;
 
     busboy.on("file", async (_, file, fileName) => {
-      newFileName.push(`https://storage.googleapis.com/its-mine-storage/images/objects/${idFile}/${i}_${fileName}`);
+      newFileName.push(`https://storage.googleapis.com/its-mine-storage/images/${idFile}/${i}_${fileName}`);
 
-      file.pipe(myBucket.file(`images/objects/${idFile}/${i}_${fileName}`).createWriteStream())
+      file.pipe(myBucket.file(`images/${idFile}/${i}_${fileName}`).createWriteStream())
       i++
     })
 
@@ -106,7 +106,7 @@ export const deleteMethod = async (req: Request, res: Response) => {
     let { link } = await uploadFiles.getSingleDoc(req.params.id);
     let arLink = link.split("/");
     let leng = arLink.length;
-    let path = `images/objects/${arLink[leng - 2]}/${arLink[leng - 1]}`
+    let path = `images/${arLink[leng - 2]}/${arLink[leng - 1]}`
 
     await myBucket.file(path).delete();
     await uploadFiles.deleteDocument(req.params.id);

@@ -9,7 +9,7 @@ class Stogare {
     this.userId = userId;
   }
 
-  getUserId() {
+  getUserId(): string {
     return this.userId;
   }
 }

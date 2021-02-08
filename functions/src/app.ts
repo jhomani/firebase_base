@@ -1,15 +1,18 @@
 import express, { Application } from "express";
 import morgan from "morgan";
 import path from "path";
-// import multer from 'multer';
-const multer = require('multer');
-
-const upload = multer();
 
 // Routes
 import UserRouter from "./routes/users.routes";
 import Objects from "./routes/objects.routes";
 import UploadFiles from "./routes/upload-files.routes";
+import Notifications from "./routes/notifications.routes";
+import References from "./routes/references.routes";
+import Chats from "./routes/chats.routes";
+import Messages from "./routes/messages.routes";
+import UserTypes from "./routes/user-types.routes";
+import ObjectTypes from "./routes/object-types.routes";
+
 
 export class App {
   private app: Application;
@@ -29,6 +32,12 @@ export class App {
     this.app.use("/users", UserRouter);
     this.app.use("/objects", Objects);
     this.app.use("/upload-files", UploadFiles);
+    this.app.use("/notifications", Notifications);
+    this.app.use("/references", References);
+    this.app.use("/chats", Chats);
+    this.app.use("/messages", Messages);
+    this.app.use("/object-types", ObjectTypes);
+    this.app.use("/user-types", UserTypes);
   }
 
   middlewares() {
