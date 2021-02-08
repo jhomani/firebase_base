@@ -11,9 +11,7 @@ let users = new UserResquest('users', schema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
-    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
-
-    const { password, ...others } = await users.getSingleDoc(req.params.id, filter);
+    const { password, ...others } = await users.getSingleDoc(req.params.id);
 
     return res.json(others);
   } catch (err) {
