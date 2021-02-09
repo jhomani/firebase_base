@@ -2,7 +2,7 @@ import { auth } from '../midlewares/authMiddle';
 import { Router } from "express";
 
 import {
-  getMethod, loginMethod,
+  getMethod, loginMethod, loginSocialMedia,
   registerMethod, singleGet,
   logoutMethod, deleteMethod, getMeUser,
   patchMethod, countMethod, deleteFileMethod
@@ -14,6 +14,7 @@ router.route("/").get(auth, getMethod);
 router.route("/count").get(auth, countMethod);
 router.route("/login").post(loginMethod);
 router.route("/register").post(registerMethod);
+router.route("/social-media").post(loginSocialMedia);
 router.route("/logout").post(auth, logoutMethod);
 router.route("/:id").delete(auth, deleteMethod);
 router.route("/:id/file").delete(auth, deleteFileMethod);

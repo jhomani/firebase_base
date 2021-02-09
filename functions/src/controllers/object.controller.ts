@@ -47,6 +47,22 @@ export const getMethod = async (req: Request, res: Response) => {
   }
 }
 
+export const getMyMethod = async (req: Request, res: Response) => {
+  try {
+    let filter = typeof req.query.filter === 'string' ? JSON.parse(req.query.filter) : {};
+
+    filter.where = { userId: storage.getUserId() }
+
+    const arrRes = await objects.getCollection(filter);
+
+    return res.json(arrRes);
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
 export const postMethod = async (req: Request, res: Response) => {
   try {
     let { latitude, longitude, ...others } = await postSchema.validateAsync(req.body);

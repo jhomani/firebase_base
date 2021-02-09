@@ -101,9 +101,11 @@ export const loginSocialMedia = async (req: Request, res: Response) => {
     let obj;
     let emailExist = await db.collection("users").where("email", "==", email).get();
 
-    if (emailExist.empty)
-      obj = await users.addDocument({ ...others, email })
-    else
+    if (emailExist.empty) {
+      let userType = (await db.collection("userType").where("name", "==", "client").get()).docs;
+
+      obj = await users.addDocument({ ...others, email, userTypeId: userType[0].id })
+    } else
       obj = { ...emailExist.docs[0].data(), id: emailExist.docs[0].id }
 
     const claims = { sub: obj.id, name: obj.firstName }
