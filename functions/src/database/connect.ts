@@ -15,6 +15,7 @@ let storage = new Storage({
 
 export let db: FirebaseFirestore.Firestore = admin.firestore();
 export let myBucket = storage.bucket("its-mine-storage");
+
 // export let myBucket = admin.storage().bucket();
 // export let buckets = admin.storage().bucket();
 

@@ -30,3 +30,10 @@ export const patchSchema = Joi.object({
   userTypeId: Joi.string(),
   phone: Joi.string(),
 }).options({ abortEarly: false });
+
+export const socialMediaSchema = Joi.object({
+  firstName: Joi.string().required(),
+  lastName: Joi.string(),
+  avatar: Joi.object().required(),
+  email: Joi.string().required(),
+}).options({ abortEarly: false });

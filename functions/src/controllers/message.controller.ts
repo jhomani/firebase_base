@@ -63,7 +63,7 @@ export const postMethod = async (req: Request, res: Response) => {
     let value = await postSchema.validateAsync(req.body);
     let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
 
-    let obj = await messages.addDocument({ ...value, userId: storage.getUserId() }, docId);
+    let obj = await messages.addDocument({ ...value, createdAt: Date.now(), userId: storage.getUserId() }, docId);
     return res.json(obj);
 
   } catch (err) {

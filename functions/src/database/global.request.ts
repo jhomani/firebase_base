@@ -37,6 +37,12 @@ export default class GlobalReq {
 
   public setWhere() {
     for (let ele in this.where) {
+      if (typeof this.where[ele] === "object") {
+        this.collection
+          .orderBy(ele).startAt(this.where[ele][0]).endAt(this.where[ele][1])
+
+        break;
+      }
       this.collection = this.collection.where(ele, '==', this.where[ele]);
     }
   }
@@ -76,7 +82,7 @@ export default class GlobalReq {
   }
 
   async getCollection(filter: any = {}) {
-    let { orderBy, skip, limit, fields, where, include } = filter;
+    let { orderBy, skip, limit, fields, dimension, where, include } = filter;
 
     this.skip = skip || 0;
     this.limit = limit || 0;
@@ -85,8 +91,19 @@ export default class GlobalReq {
     this.include = include || [];
     this.orderBy = orderBy || '';
 
+    if (dimension) {
+      let { lat, lon, km }: any = dimension ?? {};
+      let inLength = .01 * km;
+
+      let firstArea = (lat - inLength) * (lon - inLength);
+      let secondArea = (lat + inLength) * (lon + inLength);
+
+      this.collection = this.collection
+        .where("area", "<", firstArea).where("area", ">=", secondArea);
+    }
+
     try {
-      this.setWhere();
+      if (!dimension) this.setWhere();
       this.setPrimitiveData();
       this.setFields();
 
