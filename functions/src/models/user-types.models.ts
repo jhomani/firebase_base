@@ -17,4 +17,3 @@ export const patchSchema = Joi.object({
   abbreviation: Joi.string(),
   description: Joi.string(),
 }).options({ abortEarly: false });
-

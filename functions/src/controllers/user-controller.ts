@@ -1,6 +1,10 @@
 import UserResquest from '../database/user.request';
 import { Request, Response } from "express";
-import { registerSchema, loginSchema, patchSchema, schema } from '../models/user.models';
+import {
+  registerSchema, loginSchema,
+  patchSchema, schema,
+  socialMediaSchema
+} from '../models/user.models';
 import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
@@ -81,8 +85,32 @@ export const loginMethod = async (req: Request, res: Response) => {
 
       const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
 
-      return res.json({ authToken: jwt, name: obj.name });
+      return res.json({ authToken: jwt });
     } else throw new Error('incorrent credentials')
+  } catch (err) {
+    let msg = err.details ? err.details : err.message
+
+    if (err.details) return res.status(422).json(msg);
+    else return res.status(401).json({ msg });
+  }
+}
+
+export const loginSocialMedia = async (req: Request, res: Response) => {
+  try {
+    const { email, ...others } = await socialMediaSchema.validateAsync(req.body);
+    let obj;
+    let emailExist = await db.collection("users").where("email", "==", email).get();
+
+    if (emailExist.empty)
+      obj = await users.addDocument({ ...others, email })
+    else
+      obj = { ...emailExist.docs[0].data(), id: emailExist.docs[0].id }
+
+    const claims = { sub: obj.id, name: obj.firstName }
+
+    const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
+
+    return res.json({ authToken: jwt });
   } catch (err) {
     let msg = err.details ? err.details : err.message
 
