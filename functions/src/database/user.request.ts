@@ -1,6 +1,6 @@
 import GlobalReq from './global.request';
-import { User } from '../interface/user.interface'
-import { UserComplete } from '../interface/user.interface'
+import { UserComplete } from '../interface/user.interface';
+import { instance } from '../database/connect';
 
 export default class UserResquest extends GlobalReq {
   constructor(collection: string, schema: Array<string>) {
@@ -25,6 +25,32 @@ export default class UserResquest extends GlobalReq {
       console.log(error.message)
 
       throw new Error("incorret credentials");
+    }
+  }
+
+  async setWithArray(id: string, value: any) {
+    const { deleteFavorite, addFavorite, ...others } = value ?? {};
+
+    try {
+      let data = { ...others }
+
+      if (deleteFavorite) data = {
+        ...data,
+        objectsFavorites: instance.FieldValue.arrayRemove(deleteFavorite)
+      }
+
+      if (addFavorite) data = {
+        ...data,
+        objectsFavorites: instance.FieldValue.arrayUnion(addFavorite)
+      }
+
+      await this.collection.doc(id).update(data);
+
+      return { msg: "successful updated!" }
+    } catch (error) {
+      console.log(error.message)
+
+      throw new Error('No document to update');
     }
   }
 }

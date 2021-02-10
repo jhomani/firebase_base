@@ -1,6 +1,7 @@
 import GlobalReq from '../database/global.request';
 import { fieldsSchema, postSchema, patchSchema } from '../models/references.models';
 import { Request, Response } from "express";
+import storage from "../storage/index";
 
 const references = new GlobalReq('references', fieldsSchema);
 
@@ -31,6 +32,22 @@ export const countMethod = async (req: Request, res: Response) => {
   }
 }
 
+export const getMyMethod = async (req: Request, res: Response) => {
+  try {
+    let filter = typeof req.query.filter === 'string' ? JSON.parse(req.query.filter) : {};
+
+    filter.where = { userId: storage.getUserId() }
+
+    const arrRes = await references.getCollection(filter);
+
+    return res.json(arrRes);
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
 export const getMethod = async (req: Request, res: Response) => {
   try {
     console.log(typeof req.query.filter);
@@ -50,7 +67,7 @@ export const postMethod = async (req: Request, res: Response) => {
   try {
     let value = await postSchema.validateAsync(req.body);
 
-    let obj = await references.addDocument(value);
+    let obj = await references.addDocument({ ...value, userId: storage.getUserId() });
     return res.json(obj);
 
   } catch (err) {

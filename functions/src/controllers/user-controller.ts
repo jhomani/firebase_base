@@ -9,12 +9,13 @@ import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
 import storage from "../storage/index";
-import { db, myBucket } from "../database/connect"
+import { db, instance, myBucket } from "../database/connect"
 
 let users = new UserResquest('users', schema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
+    console.log("here")
     const { password, ...others } = await users.getSingleDoc(req.params.id);
 
     return res.json(others);
@@ -146,6 +147,31 @@ export const registerMethod = async (req: Request, res: Response) => {
   }
 }
 
+export const getMyFavorites = async (req: Request, res: Response) => {
+  try {
+    console.log(storage.getUserId(), "you...");
+    const { objectsFavorites } = await users.getSingleDoc(storage.getUserId());
+    let objects;
+
+    console.log(objectsFavorites)
+    if (objectsFavorites) {
+      let response = (await db.collection("objects")
+        .where(instance.FieldPath.documentId(), "in", objectsFavorites).get())
+        .docs;
+
+      objects = response.map(elem => ({ ...elem.data(), id: elem.id }))
+
+    }
+
+
+    return res.json(objects || []);
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
 export const patchMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
@@ -160,13 +186,13 @@ export const patchMethod = async (req: Request, res: Response) => {
 
         rating = { average: +average.toFixed(1), totalUsers: old.totalUsers + 1 }
 
-        obj = await users.setDocument(req.params.id, { ...others, rating });
+        obj = await users.setWithArray(req.params.id, { ...others, rating });
       } else {
         rating = { average: rating, totalUsers: 1 }
-        obj = await users.setDocument(req.params.id, { ...others, rating });
+        obj = await users.setWithArray(req.params.id, { ...others, rating });
       }
     } else
-      obj = await users.setDocument(req.params.id, { ...others });
+      obj = await users.setWithArray(req.params.id, { ...others });
 
     return res.json(obj);
   } catch (err) {
