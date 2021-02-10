@@ -72,13 +72,13 @@ export const postMethod = async (req: Request, res: Response) => {
       let area = +(latitude * longitude).toFixed(6);
       obj = await objects.addDocument({ ...others, userId: storage.getUserId(), area, latitude, longitude, createdAt: Date.now() });
     } else
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), latitude, longitude, createdAt: Date.now() });
+      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), createdAt: Date.now() });
 
     return res.json(obj);
 
   } catch (err) {
     console.log(err);
-    let msg = err.details ? err.details : err.msg
+    let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json({ msg });
     else return res.status(500).json({ msg });
@@ -87,19 +87,20 @@ export const postMethod = async (req: Request, res: Response) => {
 
 export const patchMethod = async (req: Request, res: Response) => {
   try {
+    if (!req.params.id) throw new Error('id is required');
     let { latitude, longitude, ...others } = await patchSchema.validateAsync(req.body);
     let obj;
 
     if (latitude && longitude) {
       let area = +(latitude * longitude).toFixed(6);
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), area, latitude, longitude, createdAt: Date.now() });
+      obj = await objects.setDocument(req.params.id, { ...others, userId: storage.getUserId(), area, latitude, longitude });
     } else
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), latitude, longitude });
+      obj = await objects.setDocument(req.params.id, { ...others, userId: storage.getUserId() });
 
     return res.json(obj);
   } catch (err) {
     console.log(err);
-    let msg = err.details ? err.details : err.msg
+    let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json({ msg });
     else return res.status(500).json({ msg });

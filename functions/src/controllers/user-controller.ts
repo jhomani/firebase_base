@@ -149,10 +149,24 @@ export const registerMethod = async (req: Request, res: Response) => {
 export const patchMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
+    let { rating, ...others } = await patchSchema.validateAsync(req.body);
+    let obj;
 
-    const value = await patchSchema.validateAsync(req.body);
+    if (rating) {
+      const { rating: old } = await users.getSingleDoc(req.params.id)
 
-    let obj = await users.setDocument(req.params.id, value);
+      if (old) {
+        let average = ((old.average * old.totalUsers) + rating) / (old.totalUsers + 1);
+
+        rating = { average: +average.toFixed(1), totalUsers: old.totalUsers + 1 }
+
+        obj = await users.setDocument(req.params.id, { ...others, rating });
+      } else {
+        rating = { average: rating, totalUsers: 1 }
+        obj = await users.setDocument(req.params.id, { ...others, rating });
+      }
+    } else
+      obj = await users.setDocument(req.params.id, { ...others });
 
     return res.json(obj);
   } catch (err) {

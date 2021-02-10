@@ -15,6 +15,8 @@ export const fieldsSchema: Array<string> = [
   "verify",
   "state",
   "favorite",
+  "tags",
+  "questAndAnswer",
 ];
 
 export const postSchema = Joi.object({
@@ -30,6 +32,8 @@ export const postSchema = Joi.object({
   verify: Joi.bool(),
   favorite: Joi.bool(),
   state: Joi.string(),
+  tags: Joi.array().items(Joi.string()),
+  questAndAnswer: Joi.array().items(Joi.object())
 }).options({ abortEarly: false });
 
 export const patchSchema = Joi.object({
@@ -46,4 +50,6 @@ export const patchSchema = Joi.object({
   verify: Joi.bool(),
   favorite: Joi.bool(),
   state: Joi.string(),
+  tags: Joi.array().items(Joi.string()),
+  questAndAnswer: Joi.array().items(Joi.object())
 }).options({ abortEarly: false });
