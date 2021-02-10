@@ -12,6 +12,7 @@ import Chats from "./routes/chats.routes";
 import Messages from "./routes/messages.routes";
 import UserTypes from "./routes/user-types.routes";
 import ObjectTypes from "./routes/object-types.routes";
+import Tags from "./routes/tags.routes";
 
 
 export class App {
@@ -38,6 +39,7 @@ export class App {
     this.app.use("/messages", Messages);
     this.app.use("/object-types", ObjectTypes);
     this.app.use("/user-types", UserTypes);
+    this.app.use("/tags", Tags);
   }
 
   middlewares() {

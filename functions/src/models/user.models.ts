@@ -6,8 +6,10 @@ export const schema: Array<string> = [
   'firstName',
   'userTypeId',
   'phone',
+  'rating',
   'avatar',
 ]
+
 
 export const registerSchema = Joi.object({
   email: Joi.string().email().min(4).max(25).required(),
@@ -15,6 +17,7 @@ export const registerSchema = Joi.object({
   lastName: Joi.string().required(),
   firstName: Joi.string().required(),
   phone: Joi.string().required(),
+  rating: Joi.object(),
   userTypeId: Joi.string(),
 }).options({ abortEarly: false });
 
@@ -26,6 +29,7 @@ export const loginSchema = Joi.object({
 export const patchSchema = Joi.object({
   email: Joi.string().email().min(4).max(25),
   lastName: Joi.string(),
+  rating: Joi.number(),
   firstName: Joi.string(),
   userTypeId: Joi.string(),
   phone: Joi.string(),

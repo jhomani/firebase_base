@@ -68,7 +68,7 @@ export const postMethod = async (req: Request, res: Response) => {
 
   } catch (err) {
     console.log(err);
-    let msg = err.details ? err.details : err.msg
+    let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json({ msg });
     else return res.status(500).json({ msg });
@@ -87,7 +87,7 @@ export const patchMethod = async (req: Request, res: Response) => {
     return res.json(obj);
   } catch (err) {
     console.log(err);
-    let msg = err.details ? err.details : err.msg
+    let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json({ msg });
     else return res.status(500).json({ msg });

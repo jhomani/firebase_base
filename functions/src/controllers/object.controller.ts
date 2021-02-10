@@ -65,20 +65,35 @@ export const getMyMethod = async (req: Request, res: Response) => {
 
 export const postMethod = async (req: Request, res: Response) => {
   try {
-    let { latitude, longitude, ...others } = await postSchema.validateAsync(req.body);
-    let obj;
+    let { latitude, longitude, tags, ...others } = await postSchema.validateAsync(req.body);
+    let value = { ...others };
+
+    if (tags) {
+      let allTags = (await db.collection('tags').get()).docs
+      let tagsName = allTags.map(el => el.data().name);
+
+      for (let tag of tags) {
+        let result = tagsName.indexOf(tag) !== -1;
+
+        if (!result) return res.status(422).json({ message: `the tag '${tag}' is not found in tag's collection` })
+      }
+
+      value = { ...value, tags }
+    }
+
 
     if (latitude && longitude) {
       let area = +(latitude * longitude).toFixed(6);
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), area, latitude, longitude, createdAt: Date.now() });
-    } else
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), latitude, longitude, createdAt: Date.now() });
 
+      value = { ...value, area, latitude, longitude }
+    }
+
+    let obj = await objects.addDocument({ ...value, userId: storage.getUserId(), createdAt: Date.now() });
     return res.json(obj);
 
   } catch (err) {
     console.log(err);
-    let msg = err.details ? err.details : err.msg
+    let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json({ msg });
     else return res.status(500).json({ msg });
@@ -87,19 +102,35 @@ export const postMethod = async (req: Request, res: Response) => {
 
 export const patchMethod = async (req: Request, res: Response) => {
   try {
-    let { latitude, longitude, ...others } = await patchSchema.validateAsync(req.body);
-    let obj;
+    if (!req.params.id) throw new Error('id is required');
+    let { latitude, tags, longitude, ...others } = await patchSchema.validateAsync(req.body);
+    let value = {};
+
+    if (tags) {
+      let allTags = (await db.collection('tags').get()).docs
+      let tagsName = allTags.map(el => el.data().name);
+
+      for (let tag of tags) {
+        let result = tagsName.indexOf(tag) !== -1;
+
+        if (!result) return res.status(422).json({ message: `the tag '${tag}' is not found in tag's collection` })
+      }
+
+      value = { ...value, tags }
+    }
 
     if (latitude && longitude) {
       let area = +(latitude * longitude).toFixed(6);
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), area, latitude, longitude, createdAt: Date.now() });
-    } else
-      obj = await objects.addDocument({ ...others, userId: storage.getUserId(), latitude, longitude });
+
+      value = { ...value, area, latitude, longitude }
+    }
+
+    let obj = await objects.setDocument(req.params.id, { ...others, userId: storage.getUserId() });
 
     return res.json(obj);
   } catch (err) {
     console.log(err);
-    let msg = err.details ? err.details : err.msg
+    let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json({ msg });
     else return res.status(500).json({ msg });
