@@ -3,6 +3,7 @@ import Joi from 'joi';
 export const fieldsSchema: Array<string> = [
   "fullName",
   "phone",
+  "userId",
   "slug"
 ];
 
