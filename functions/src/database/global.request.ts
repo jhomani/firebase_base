@@ -1,4 +1,4 @@
-import { db } from './connect';
+import { db, instance } from './connect';
 
 export default class GlobalReq {
   public nameCollection: string;
@@ -7,7 +7,6 @@ export default class GlobalReq {
   public limit: number;
   public fields: any;
   public orderBy: string;
-  public include: Array<any>;
   public where: any;
   public schema: Array<string>;
 
@@ -19,7 +18,6 @@ export default class GlobalReq {
     this.limit = 0;
     this.fields = {};
     this.orderBy = '';
-    this.include = [];
     this.where = {};
     this.schema = schema;
   }
@@ -29,7 +27,6 @@ export default class GlobalReq {
     this.limit = 0;
     this.fields = {};
     this.orderBy = '';
-    this.include = [];
     this.where = {};
 
     this.collection = db.collection(this.nameCollection);
@@ -72,6 +69,20 @@ export default class GlobalReq {
       this.collection = this.collection.select(...selected);
     }
   }
+  public buildInclute(collect: Array<any>, incluteCol: Array<any>, field: string): Array<any> {
+    let response = collect.map(patter => {
+      for (let elem of incluteCol) {
+        if (elem.id === patter[field]) {
+          let { id, ...others } = elem;
+          return ({ ...patter, [field.substr(0, field.length - 2)]: others });
+        }
+      }
+
+      return ({ ...patter });
+    })
+
+    return response;
+  }
 
   public setPrimitiveData() {
     if (this.skip) this.collection = this.collection.offset(this.skip);
@@ -88,7 +99,6 @@ export default class GlobalReq {
     this.limit = limit || 0;
     this.fields = fields || {};
     this.where = where || {};
-    this.include = include || [];
     this.orderBy = orderBy || '';
 
     if (dimension) {
@@ -109,8 +119,39 @@ export default class GlobalReq {
 
       let datas = (await this.collection.get()).docs;
       this.resetValues();
+      let resp: Array<any> = [];
 
-      let resp: Array<any> = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      if (include) {
+        let partialResp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
+        for (let obj of include) {
+          let { collection, fields } = obj ?? {};
+
+          let idsInclude: Array<any> = [];
+          let field = collection.substr(0, collection.length - 1) + "Id";
+
+          resp = partialResp.map((ele: any) => {
+            if (idsInclude.indexOf(ele[field]) == -1 && ele[field])
+              idsInclude.push(ele[field]);
+
+            return ({ ...ele })
+          });
+
+          console.log(idsInclude, obj)
+
+          if (idsInclude.length == 0) continue;
+
+          let response = (await db.collection(collection)
+            .where(instance.FieldPath.documentId(), "in", idsInclude).select(...fields).get()).docs;
+
+          let incluteCol = response.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
+          partialResp = this.buildInclute(resp, incluteCol, field);
+        }
+
+        resp = partialResp;
+      } else
+        resp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
       return resp;
     } catch (error) {

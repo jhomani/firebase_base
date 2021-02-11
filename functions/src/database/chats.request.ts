@@ -13,7 +13,6 @@ export default class ChatRequest extends GlobalReq {
     this.limit = limit || 0;
     this.fields = fields || {};
     this.where = where || {};
-    this.include = include || [];
     this.orderBy = orderBy || '';
 
     try {
