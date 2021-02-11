@@ -73,7 +73,7 @@ export default class GlobalReq {
     let response = collect.map(patter => {
       for (let elem of incluteCol) {
         if (elem.id === patter[field]) {
-          let { id, ...others } = elem;
+          let { id, password, ...others } = elem;
           return ({ ...patter, [field.substr(0, field.length - 2)]: others });
         }
       }

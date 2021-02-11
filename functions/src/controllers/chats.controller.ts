@@ -1,16 +1,15 @@
 import ChatRequest from '../database/chats.request';
 import { fieldsSchema, postSchema, patchSchema } from '../models/chats.models';
 import { Request, Response } from "express";
-import { db, myBucket } from "../database/connect";
 import storage from "../storage/index";
 
-const objects = new ChatRequest('chats', fieldsSchema);
+const chats = new ChatRequest('chats', fieldsSchema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
 
-    let doc = await objects.getSingleDoc(req.params.id);
+    let doc = await chats.getSingleDoc(req.params.id);
 
     return res.json(doc);
   } catch (err) {
@@ -22,7 +21,7 @@ export const singleGet = async (req: Request, res: Response) => {
 
 export const countMethod = async (req: Request, res: Response) => {
   try {
-    const size = await objects.countMyChats(storage.getUserId());
+    const size = await chats.countMyChats(storage.getUserId());
     return res.json({ count: size });
   } catch (err) {
     let msg = err.message;
@@ -35,7 +34,7 @@ export const getMethodOwn = async (req: Request, res: Response) => {
   try {
     let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
-    const arrRes = await objects.getMyChats(filter, storage.getUserId());
+    const arrRes = await chats.getMyChats(filter, storage.getUserId());
 
     return res.json(arrRes);
   } catch (err) {
@@ -49,7 +48,7 @@ export const getMethod = async (req: Request, res: Response) => {
   try {
     let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
-    const arrRes = await objects.getCollection(filter);
+    const arrRes = await chats.getCollection(filter);
 
     return res.json(arrRes);
   } catch (err) {
@@ -62,9 +61,9 @@ export const getMethod = async (req: Request, res: Response) => {
 export const postMethod = async (req: Request, res: Response) => {
   try {
     let value = await postSchema.validateAsync(req.body);
-    let timestamps = { createdAt: Date.now(), lastMessage: Date.now() }
+    let timestamps = { createdAt: Date.now(), updatedAt: Date.now() }
 
-    let obj = await objects.addDocument({ ...value, ...timestamps });
+    let obj = await chats.addDocument({ ...value, ...timestamps, lastMessage: "vacio" });
     return res.json(obj);
 
   } catch (err) {
@@ -79,7 +78,7 @@ export const postMethod = async (req: Request, res: Response) => {
 export const patchMethod = async (req: Request, res: Response) => {
   try {
     let value = await patchSchema.validateAsync(req.body);
-    let obj = await objects.setDocument(req.params.id, value);
+    let obj = await chats.setDocument(req.params.id, value);
 
     return res.json(obj);
   } catch (err) {
@@ -94,14 +93,14 @@ export const patchMethod = async (req: Request, res: Response) => {
 export const deleteMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
-    let { members } = await objects.getSingleDoc(req.params.id);
+    let { members } = await chats.getSingleDoc(req.params.id);
 
     if (members.length == 1)
-      await objects.deleteDocument(req.params.id);
+      await chats.deleteDocument(req.params.id);
     else {
       let restMem: Array<string> = members.filter((ele: any) => ele != storage.getUserId());
 
-      await objects.setDocument(req.params.id, { members: restMem });
+      await chats.setDocument(req.params.id, { members: restMem });
     }
 
 
