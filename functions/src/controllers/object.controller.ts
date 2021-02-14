@@ -3,6 +3,7 @@ import { fieldsSchema, postSchema, patchSchema } from '../models/object.models';
 import { Request, Response } from "express";
 import { db, myBucket } from "../database/connect";
 import storage from "../storage/index";
+import { mainFuntion } from "../utils/publishToFacebook";
 
 const objects = new GlobalReq('objects', fieldsSchema);
 
@@ -144,6 +145,18 @@ export const deleteMethod = async (req: Request, res: Response) => {
     await objects.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
+export const publishInFacebookAds = async (req: Request, res: Response) => {
+  try {
+    let resp = await mainFuntion();
+
+    return res.json(resp);
   } catch (err) {
     let msg = err.message;
 
