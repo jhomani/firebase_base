@@ -5,7 +5,7 @@ import { auth } from '../midlewares/authMiddle';
 const router = Router();
 
 router.route("/count").get(auth, countMethod);
-router.route("/").get(getMethod);
+router.route("/").get(auth, getMethod);
 router.route("/:id").get(auth, singleGet);
 router.route("/").post(auth, postMethod);
 router.route("/:id").patch(auth, patchMethod);

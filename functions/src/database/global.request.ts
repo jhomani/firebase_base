@@ -69,16 +69,36 @@ export default class GlobalReq {
       this.collection = this.collection.select(...selected);
     }
   }
-  public buildInclute(collect: Array<any>, incluteCol: Array<any>, field: string): Array<any> {
+  public buildInclute(
+    collect: Array<any>,
+    incluteCol: Array<any>,
+    field: string,
+    multiple: boolean = false
+  ): Array<any> {
     let response = collect.map(patter => {
+      let includeData: Array<any> = [];
+      let fieldCmp = field.substr(0, field.length - 2);
+
       for (let elem of incluteCol) {
-        if (elem.id === patter[field]) {
+        if (elem.id === patter[field] && !multiple) {
           let { id, password, ...others } = elem;
-          return ({ ...patter, [field.substr(0, field.length - 2)]: others });
+
+          includeData.push(others);
+        }
+
+        if (patter[field]?.indexOf(elem.id) !== -1 && multiple) {
+          let { id, password, ...others } = elem;
+
+          includeData.push(others);
         }
       }
 
-      return ({ ...patter });
+      if (multiple && includeData.length > 0)
+        return ({ ...patter, [fieldCmp]: includeData });
+      else if (includeData.length > 0)
+        return ({ ...patter, [fieldCmp]: includeData[0] });
+      else
+        return ({ ...patter });
     })
 
     return response;
@@ -131,13 +151,19 @@ export default class GlobalReq {
           let field = collection.substr(0, collection.length - 1) + "Id";
 
           resp = partialResp.map((ele: any) => {
-            if (idsInclude.indexOf(ele[field]) == -1 && ele[field])
-              idsInclude.push(ele[field]);
+            if (collection == 'tags' && ele.tagsId)
+              for (let id of ele.tagsId) {
+                if (idsInclude.indexOf(id) == -1)
+                  idsInclude.push(id);
+              }
+            else
+              if (idsInclude.indexOf(ele[field]) == -1 && ele[field])
+                idsInclude.push(ele[field]);
 
             return ({ ...ele })
           });
 
-          console.log(idsInclude, obj)
+          console.log(idsInclude);
 
           if (idsInclude.length == 0) continue;
 
@@ -146,7 +172,10 @@ export default class GlobalReq {
 
           let incluteCol = response.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
-          partialResp = this.buildInclute(resp, incluteCol, field);
+          if (collection == 'tags')
+            partialResp = this.buildInclute(resp, incluteCol, field, true);
+          else
+            partialResp = this.buildInclute(resp, incluteCol, field);
         }
 
         resp = partialResp;
