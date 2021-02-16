@@ -112,9 +112,9 @@ export const patchMethod = async (req: Request, res: Response) => {
       let tagsName = allTags.map(el => el.data().name);
 
       for (let tag of tags) {
-        let result = tagsName.indexOf(tag) !== -1;
+        let result = tagsName.indexOf(tag.name) !== -1;
 
-        if (!result) return res.status(422).json({ message: `the tag '${tag}' is not found in tag's collection` })
+        if (!result) return res.status(422).json({ message: `the tag '${tag.name}' is not found in tag's collection` })
       }
 
       value = { ...value, tags }
