@@ -211,6 +211,8 @@ export default class GlobalReq {
           else
             field = collection.substr(0, collection.length - 1) + "Id";
 
+          if (!dataSigle[field]) continue;
+
           if (collection == "tags")
             response = (await db.collection(collection)
               .where(instance.FieldPath.documentId(), "in", dataSigle[field]).select(...fields).get()).docs;
