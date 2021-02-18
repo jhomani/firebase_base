@@ -9,12 +9,12 @@ import { auth } from '../midlewares/authMiddle';
 
 const router = Router();
 
-router.route("/count").get(auth, countMethod);
+router.route("/count").get(countMethod);
 router.route("/favorites").get(auth, getMyFavorites);
 router.route("/publish-ads").post(auth, publishInFacebookAds);
 router.route("/").get(getMethod);
 router.route("/me").get(auth, getMyMethod);
-router.route("/:id").get(auth, singleGet);
+router.route("/:id").get(singleGet);
 router.route("/").post(auth, postMethod);
 router.route("/:id").patch(auth, patchMethod);
 router.route("/:id/files").delete(auth, deleteFilesMethod);
