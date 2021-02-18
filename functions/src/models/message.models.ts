@@ -5,7 +5,7 @@ export const fieldsSchema: Array<string> = [
   "type",
   "image",
   "userId",
-  "createdAd",
+  "createdAt",
   "latitude",
   "longitude",
 ];

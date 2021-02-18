@@ -3,14 +3,17 @@ import { fieldsSchema, postSchema, patchSchema } from '../models/object.models';
 import { Request, Response } from "express";
 import { db, myBucket } from "../database/connect";
 import storage from "../storage/index";
+import { mainFuntion } from "../utils/publishToFacebook";
 
 const objects = new GlobalReq('objects', fieldsSchema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
+    let filter = typeof req.query.filter === 'string' ? JSON.parse(req.query.filter) : {};
+
     if (!req.params.id) throw new Error('id is required');
 
-    let doc = await objects.getSingleDoc(req.params.id);
+    let doc = await objects.getSingleDoc(req.params.id, filter);
 
     return res.json(doc);
   } catch (err) {
@@ -111,9 +114,9 @@ export const patchMethod = async (req: Request, res: Response) => {
       let tagsName = allTags.map(el => el.data().name);
 
       for (let tag of tags) {
-        let result = tagsName.indexOf(tag) !== -1;
+        let result = tagsName.indexOf(tag.name) !== -1;
 
-        if (!result) return res.status(422).json({ message: `the tag '${tag}' is not found in tag's collection` })
+        if (!result) return res.status(422).json({ message: `the tag '${tag.name}' is not found in tag's collection` })
       }
 
       value = { ...value, tags }
@@ -144,6 +147,18 @@ export const deleteMethod = async (req: Request, res: Response) => {
     await objects.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
+export const publishInFacebookAds = async (req: Request, res: Response) => {
+  try {
+    let resp = await mainFuntion();
+
+    return res.json(resp);
   } catch (err) {
     let msg = err.message;
 

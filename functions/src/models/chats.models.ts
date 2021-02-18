@@ -6,17 +6,17 @@ export const fieldsSchema: Array<string> = [
   "createdAt",
   "lastMessage",
   "objectId",
-  "members"
+  "membersId"
 ];
 
 export const postSchema = Joi.object({
   name: Joi.string().required(),
   objectId: Joi.string(),
-  members: Joi.array().items(Joi.string()).required(),
+  membersId: Joi.array().items(Joi.string()).required(),
 }).options({ abortEarly: false });
 
 export const patchSchema = Joi.object({
   name: Joi.string().required(),
   objectId: Joi.string().required(),
-  members: Joi.array().items(Joi.string()).required(),
+  membersId: Joi.array().items(Joi.string()).required(),
 }).options({ abortEarly: false });

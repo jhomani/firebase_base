@@ -50,7 +50,7 @@ export const postMethod = async (req: Request, res: Response) => {
   try {
     let value = await postSchema.validateAsync(req.body);
 
-    let obj = await notifications.addDocument(value);
+    let obj = await notifications.addDocument({ ...value, createdAt: Date.now() });
     return res.json(obj);
   } catch (err) {
     console.log(err);

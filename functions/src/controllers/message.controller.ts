@@ -3,6 +3,7 @@ import { fieldsSchema, postSchema, patchSchema } from '../models/message.models'
 import { Request, Response } from "express";
 import { db, myBucket } from "../database/connect";
 import storage from "../storage/index";
+import { date } from 'joi';
 
 const messages = new SubCollectionReq('chats', fieldsSchema, 'messages');
 
@@ -64,8 +65,16 @@ export const postMethod = async (req: Request, res: Response) => {
     let docId: string = typeof req.query.docId === "string" ? req.query.docId : '';
 
     let obj = await messages.addDocument({ ...value, createdAt: Date.now(), userId: storage.getUserId() }, docId);
-    return res.json(obj);
 
+    let lastMessage;
+
+    if (value.type == "text") lastMessage = value.text;
+    if (value.type == "image") lastMessage = "imagen";
+    if (value.type == "location") lastMessage = "localizacion";
+
+    await db.collection("chats").doc(docId).update({ lastMessage, updatedAt: Date.now() })
+
+    return res.json(obj);
   } catch (err) {
     console.log(err);
     let msg = err.details ? err.details : err.message

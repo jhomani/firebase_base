@@ -130,7 +130,7 @@ export const registerMethod = async (req: Request, res: Response) => {
     if (!emailExist.empty) throw new Error("the email already take");
 
     if (!userTypeId) {
-      let userType = (await db.collection("userType").where("name", "==", "client").get()).docs;
+      let userType = (await db.collection("userType").where("name", "==", "User").get()).docs;
 
       userTypeId = userType[0].id;
     }

@@ -5,7 +5,6 @@ export const fieldsSchema: Array<string> = [
   "content",
   "avatar",
   "userId",
-  "radioLocate",
 ];
 
 export const postSchema = Joi.object({
@@ -13,7 +12,6 @@ export const postSchema = Joi.object({
   content: Joi.string().required(),
   avatar: Joi.object(),
   userId: Joi.string(),
-  radioLocate: Joi.number(),
 }).options({ abortEarly: false });
 
 export const patchSchema = Joi.object({
@@ -21,5 +19,4 @@ export const patchSchema = Joi.object({
   content: Joi.string(),
   avatar: Joi.object(),
   userId: Joi.string(),
-  radioLocate: Joi.number(),
 }).options({ abortEarly: false });
