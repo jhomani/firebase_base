@@ -9,9 +9,11 @@ const objects = new GlobalReq('objects', fieldsSchema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
+    let filter = typeof req.query.filter === 'string' ? JSON.parse(req.query.filter) : {};
+
     if (!req.params.id) throw new Error('id is required');
 
-    let doc = await objects.getSingleDoc(req.params.id);
+    let doc = await objects.getSingleDoc(req.params.id, filter);
 
     return res.json(doc);
   } catch (err) {

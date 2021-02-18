@@ -79,6 +79,8 @@ export default class GlobalReq {
       let includeData: Array<any> = [];
       let fieldCmp = field.substr(0, field.length - 2);
 
+      if (!patter[field]) return ({ ...patter });
+
       for (let elem of incluteCol) {
         if (elem.id === patter[field] && !multiple) {
           let { id, password, ...others } = elem;
@@ -86,7 +88,7 @@ export default class GlobalReq {
           includeData.push(others);
         }
 
-        if (patter[field]?.indexOf(elem.id) !== -1 && multiple) {
+        if (patter[field].indexOf(elem.id) !== -1 && multiple) {
           let { id, password, ...others } = elem;
 
           includeData.push(others);
@@ -163,8 +165,6 @@ export default class GlobalReq {
             return ({ ...ele })
           });
 
-          console.log(idsInclude);
-
           if (idsInclude.length == 0) continue;
 
           let response = (await db.collection(collection)
@@ -173,7 +173,7 @@ export default class GlobalReq {
           let incluteCol = response.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
           if (collection == 'tags')
-            partialResp = this.buildInclute(resp, incluteCol, field, true);
+            partialResp = this.buildInclute(resp, incluteCol, "tagsId", true);
           else
             partialResp = this.buildInclute(resp, incluteCol, field);
         }
@@ -191,14 +191,45 @@ export default class GlobalReq {
   }
 
   async getSingleDoc(id: string, filter: any = {}) {
-    let { fields } = filter;
+    let { fields, include } = filter;
     this.fields = fields || {};
 
     try {
       let resp = await this.collection.doc(id).get();
 
       if (!resp.exists) throw new Error();
-      else return ({ id: resp.id, ...resp.data() });
+
+      let dataSigle = { id: resp.id, ...resp.data() }
+
+      if (include) {
+        for (let obj of include) {
+          let response, field;
+          let { collection, fields } = obj ?? {};
+
+          if (collection == "tags")
+            field = collection.substr(0, collection.length - 1) + "sId";
+          else
+            field = collection.substr(0, collection.length - 1) + "Id";
+
+          if (collection == "tags")
+            response = (await db.collection(collection)
+              .where(instance.FieldPath.documentId(), "in", dataSigle[field]).select(...fields).get()).docs;
+          else
+            response = (await db.collection(collection)
+              .where(instance.FieldPath.documentId(), "==", dataSigle[field]).select(...fields).get()).docs;
+
+          let incluteCol = response.map((doc: any) => ({ ...doc.data() }));
+
+          if (incluteCol.length > 1) dataSigle[collection] = incluteCol;
+          else dataSigle[collection.substr(0, collection.length - 1)] = incluteCol[0];
+
+        }
+
+        resp = dataSigle;
+      } else
+        resp = dataSigle;
+
+      return resp;
     } catch (error) {
       console.log(error.message)
 
