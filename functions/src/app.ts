@@ -13,6 +13,8 @@ import Messages from "./routes/messages.routes";
 import UserTypes from "./routes/user-types.routes";
 import ObjectTypes from "./routes/object-types.routes";
 import Tags from "./routes/tags.routes";
+import Verifications from "./routes/verification.routes";
+import Settings from "./routes/setting.routes";
 
 
 export class App {
@@ -40,6 +42,8 @@ export class App {
     this.app.use("/object-types", ObjectTypes);
     this.app.use("/user-types", UserTypes);
     this.app.use("/tags", Tags);
+    this.app.use("/settings", Settings);
+    this.app.use("/verifications", Verifications);
   }
 
   middlewares() {
