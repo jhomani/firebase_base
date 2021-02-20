@@ -17,6 +17,8 @@ export const fieldsSchema: Array<string> = [
   "favorite",
   "tagsId",
   "questAndAnswer",
+  "adStatus",
+  "adId",
 ];
 
 export const postSchema = Joi.object({
@@ -52,4 +54,14 @@ export const patchSchema = Joi.object({
   state: Joi.string(),
   tagsId: Joi.array().items(Joi.string()),
   questAndAnswer: Joi.array().items(Joi.object())
+}).options({ abortEarly: false });
+
+export const adsSchema = Joi.object({
+  latitude: Joi.number().required(),
+  longitude: Joi.number().required(),
+  radius: Joi.number().min(10).max(80).required(),
+  amount: Joi.number().min(7).required(),
+  start_date: Joi.string().required(),
+  end_date: Joi.string().required(),
+  objectId: Joi.string().required()
 }).options({ abortEarly: false });

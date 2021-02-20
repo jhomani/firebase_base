@@ -15,7 +15,6 @@ let users = new UserResquest('users', schema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {
-    console.log("here")
     const { password, ...others } = await users.getSingleDoc(req.params.id);
 
     return res.json(others);

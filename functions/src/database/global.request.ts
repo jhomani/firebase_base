@@ -287,11 +287,8 @@ export default class GlobalReq {
 
   async deleteDocument(id: string) {
     try {
-      const resp = await this.collection.doc(id).get();
+      await this.collection.doc(id).delete();
 
-
-      if (!resp.exists) throw new Error();
-      else await this.collection.doc(id).delete();
     } catch (error) {
       console.log(error.message)
 
