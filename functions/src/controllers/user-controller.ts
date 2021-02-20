@@ -149,22 +149,60 @@ export const registerMethod = async (req: Request, res: Response) => {
 
 export const getMyFavorites = async (req: Request, res: Response) => {
   try {
-    console.log(storage.getUserId(), "you...");
-    const { objectsFavorites } = await users.getSingleDoc(storage.getUserId());
-    let objects;
+    let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
-    console.log(objectsFavorites)
+    let { skip, limit, include } = filter;
+
+    const { objectsFavorites } = await users.getSingleDoc(storage.getUserId());
+    let resp;
+
     if (objectsFavorites) {
       let response = (await db.collection("objects")
-        .where(instance.FieldPath.documentId(), "in", objectsFavorites).get())
+        .where(instance.FieldPath.documentId(), "in", objectsFavorites).limit(limit || 10).offset(skip || 0).get())
         .docs;
 
-      objects = response.map(elem => ({ ...elem.data(), id: elem.id }))
+      if (include) {
+        let partialResp = response.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
+        for (let obj of include) {
+          let { collection, fields } = obj ?? {};
+
+          let idsInclude: Array<any> = [];
+          let field = collection.substr(0, collection.length - 1) + "Id";
+
+          resp = partialResp.map((ele: any) => {
+            if (collection == 'tags' && ele.tagsId)
+              for (let id of ele.tagsId) {
+                if (idsInclude.indexOf(id) == -1)
+                  idsInclude.push(id);
+              }
+            else
+              if (idsInclude.indexOf(ele[field]) == -1 && ele[field])
+                idsInclude.push(ele[field]);
+
+            return ({ ...ele })
+          });
+
+          if (idsInclude.length == 0) continue;
+
+          let responseInclude = (await db.collection(collection)
+            .where(instance.FieldPath.documentId(), "in", idsInclude).select(...fields).get()).docs;
+
+          let incluteCol = responseInclude.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
+          console.log(incluteCol)
+          if (collection == 'tags')
+            partialResp = users.buildInclute(resp, incluteCol, "tagsId", true);
+          else
+            partialResp = users.buildInclute(resp, incluteCol, field);
+        }
+
+        resp = partialResp;
+      } else
+        resp = response.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     }
-
-
-    return res.json(objects || []);
+    return res.json(resp || []);
   } catch (err) {
     let msg = err.message;
 
