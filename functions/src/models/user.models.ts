@@ -20,6 +20,7 @@ export const registerSchema = Joi.object({
   rating: Joi.object(),
   userTypeId: Joi.string(),
   objectsFavorites: Joi.array().items(Joi.string()),
+  avatar: Joi.object({ id: Joi.string(), link: Joi.string() }).required(),
 }).options({ abortEarly: false });
 
 export const loginSchema = Joi.object({
@@ -36,6 +37,7 @@ export const patchSchema = Joi.object({
   phone: Joi.string(),
   deleteFavorite: Joi.string(),
   addFavorite: Joi.string(),
+  avatar: Joi.object({ id: Joi.string(), link: Joi.string() }).required(),
 }).options({ abortEarly: false });
 
 export const socialMediaSchema = Joi.object({

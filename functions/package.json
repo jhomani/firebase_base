@@ -21,13 +21,15 @@
     "bcrypt": "^5.0.0",
     "busboy": "^0.3.1",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "facebook-nodejs-business-sdk": "^9.0.1",
     "firebase-admin": "^9.2.0",
     "firebase-functions": "^3.11.0",
     "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "soap": "^0.36.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",

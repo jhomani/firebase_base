@@ -11,7 +11,7 @@ import JWT from 'jsonwebtoken';
 import storage from "../storage/index";
 import { db, instance, myBucket } from "../database/connect"
 
-let users = new UserResquest('users', schema);
+export let users = new UserResquest('users', schema);
 
 export const singleGet = async (req: Request, res: Response) => {
   try {

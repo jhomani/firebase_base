@@ -15,7 +15,8 @@ import ObjectTypes from "./routes/object-types.routes";
 import Tags from "./routes/tags.routes";
 import Verifications from "./routes/verification.routes";
 import Settings from "./routes/setting.routes";
-
+import Payments from "./routes/payment.routes";
+import dotenv from "dotenv";
 
 export class App {
   private app: Application;
@@ -28,6 +29,7 @@ export class App {
   }
 
   settings() {
+    dotenv.config();
     this.app.set("port", this.port || process.env.PORT || 3000);
   }
 
@@ -44,6 +46,7 @@ export class App {
     this.app.use("/tags", Tags);
     this.app.use("/settings", Settings);
     this.app.use("/verifications", Verifications);
+    this.app.use("/payments", Payments);
   }
 
   middlewares() {
