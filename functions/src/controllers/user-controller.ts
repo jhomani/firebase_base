@@ -1,15 +1,21 @@
 import UserResquest from '../database/user.request';
 import { Request, Response } from "express";
-import {
-  registerSchema, loginSchema,
-  patchSchema, schema,
-  socialMediaSchema
-} from '../models/user.models';
 import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
 import storage from "../storage/index";
 import { db, instance, myBucket } from "../database/connect"
+import { verify } from "jsonwebtoken";
+import { sendVerifyEmail, sendResetCodeEmail } from "../utils/sendEmail"
+import {
+  registerSchema, loginSchema,
+  patchSchema, schema,
+  socialMediaSchema,
+  newPasswordSchema,
+  resetPasswordSchema,
+  verifyCodeSchema
+} from '../models/user.models';
+
 
 export let users = new UserResquest('users', schema);
 
@@ -43,7 +49,10 @@ export const getMeUser = async (req: Request, res: Response) => {
   try {
     let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
-    const { password, ...others } = await users.getSingleDoc(storage.getUserId(), filter);
+    const { password, verifyStatus, ...others } = await users.getSingleDoc(storage.getUserId(), filter);
+
+    if (verifyStatus === "APPROVED")
+      await users.setDocument(storage.getUserId(), { verifyStatus: 'OLD_APPROVED' });
 
     return res.json(others);
   } catch (err) {
@@ -81,11 +90,13 @@ export const loginMethod = async (req: Request, res: Response) => {
     const result = await bcrypt.compare(password, obj.password);
 
     if (result) {
-      const claims = { sub: obj.id, name: obj.name }
+      if (obj.verifyStatus !== "WAITING" && obj.verifyStatus) {
+        const claims = { sub: obj.id, name: obj.name }
 
-      const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
+        const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
 
-      return res.json({ authToken: jwt });
+        return res.json({ authToken: jwt });
+      } else throw new Error('email is not verified')
     } else throw new Error('incorrent credentials')
   } catch (err) {
     let msg = err.details ? err.details : err.message
@@ -104,12 +115,16 @@ export const loginSocialMedia = async (req: Request, res: Response) => {
     if (emailExist.empty) {
       let userType = (await db.collection("userType").where("name", "==", "client").get()).docs;
 
-      obj = await users.addDocument({ ...others, email, userTypeId: userType[0].id })
+      obj = await users.addDocument({
+        ...others,
+        email,
+        verifyStatus: 'APPROVED',
+        userTypeId: userType[0].id
+      })
     } else
       obj = { ...emailExist.docs[0].data(), id: emailExist.docs[0].id }
 
     const claims = { sub: obj.id, name: obj.firstName }
-
     const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
 
     return res.json({ authToken: jwt });
@@ -121,6 +136,26 @@ export const loginSocialMedia = async (req: Request, res: Response) => {
   }
 }
 
+export const verifyEmail = async (req: Request, res: Response) => {
+  try {
+    let decode: any = await verify(req.params.token, secret);
+
+    if (decode) {
+      await users.setDocument(decode.sub, { verifyStatus: 'APPROVED' })
+
+      return res.send(`<h3 style="text-align: center; margin-top: 50px">
+        Se verifico exitosamente!<br> ya estas registrado...</h3>
+      `);
+    } else {
+      res.status(401).send('you are not authenticated to this route');
+    }
+  } catch (err) {
+    console.log(err);
+
+    res.status(401).send(err.message)
+  }
+}
+
 export const registerMethod = async (req: Request, res: Response) => {
   try {
     let { password, email, userTypeId, ...other } = await registerSchema.validateAsync(req.body);
@@ -129,13 +164,24 @@ export const registerMethod = async (req: Request, res: Response) => {
     if (!emailExist.empty) throw new Error("the email already take");
 
     if (!userTypeId) {
-      let userType = (await db.collection("userType").where("name", "==", "User").get()).docs;
+      let userType = (await db.collection("userTypes").where("abbreviation", "==", "USR").get()).docs;
 
       userTypeId = userType[0].id;
     }
 
     const hash = await bcrypt.hash(password, 12);
-    let { password: psw, ...others } = await users.addDocument({ ...other, userTypeId, email, password: hash });
+    let { password: psw, id, ...others } = await users.addDocument({
+      ...other,
+      verifyStatus: 'WAITING',
+      userTypeId,
+      email,
+      password: hash
+    });
+
+    const claims = { sub: id, name: 'verify' }
+    const jwt = JWT.sign(claims, secret, { expiresIn: '24h' });
+
+    await sendVerifyEmail(email, `${process.env.LOCAL_URL}/users/verify-email/${jwt}`)
 
     return res.json(others);
   } catch (err) {
@@ -145,6 +191,7 @@ export const registerMethod = async (req: Request, res: Response) => {
     else return res.status(500).json({ msg });
   }
 }
+
 
 export const getMyFavorites = async (req: Request, res: Response) => {
   try {
@@ -212,7 +259,7 @@ export const getMyFavorites = async (req: Request, res: Response) => {
 export const patchMethod = async (req: Request, res: Response) => {
   try {
     if (!req.params.id) throw new Error('id is required');
-    let { rating, ...others } = await patchSchema.validateAsync(req.body);
+    let { rating, password, ...others } = await patchSchema.validateAsync(req.body);
     let obj;
 
     if (rating) {
@@ -239,6 +286,66 @@ export const patchMethod = async (req: Request, res: Response) => {
     else return res.status(500).json({ msg });
   }
 
+}
+
+export const resetPassowrd = async (req: Request, res: Response) => {
+  try {
+    let { email } = await resetPasswordSchema.validateAsync(req.body);
+
+    let { id } = await users.userToVerify(email);
+    let code: string = Date.now().toString().slice(9, 13);
+
+    await sendResetCodeEmail(email, code);
+    await users.setDocument(id, { resetCode: code });
+
+    return res.json({ msg: "successful send email" });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
+export const verifyResetCode = async (req: Request, res: Response) => {
+  try {
+    let { email, resetCode: userCode } = await verifyCodeSchema.validateAsync(req.body);
+
+    let { resetCode }: any = await users.userToVerify(email);
+
+    if (resetCode === userCode) {
+      return res.json({ msg: "corrent reset code" });
+    } else
+      return res.status(406).json({ msg: "incorrent Code" });
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
+}
+
+export const newPassowrd = async (req: Request, res: Response) => {
+  try {
+    let { newPassword, resetCode: userCode, email } = await newPasswordSchema.validateAsync(req.body);
+
+    let { id, resetCode }: any = await users.userToVerify(email);
+
+    if (resetCode === userCode) {
+      const hash = await bcrypt.hash(newPassword, 12);
+
+      await users.setDocument(id, {
+        password: hash,
+        resetCode: instance.FieldValue.delete()
+      });
+
+      return res.json({ msg: "successful update passoword" });
+    } else
+      return res.status(401).json({ msg: "incorrent Code" });
+
+  } catch (err) {
+    let msg = err.message;
+
+    return res.status(400).json({ msg });
+  }
 }
 
 export const deleteMethod = async (req: Request, res: Response) => {

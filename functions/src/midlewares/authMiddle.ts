@@ -9,7 +9,7 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
   try {
     let decode: any = await verify(token, secret);
 
-    if (decode) {
+    if (decode && decode.name != "verify") {
       storage.setUserId(decode.sub);
       next();
     } else {

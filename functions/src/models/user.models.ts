@@ -9,6 +9,7 @@ export const schema: Array<string> = [
   'rating',
   'objectsFavorites',
   'avatar',
+  'verifyStatus'
 ]
 
 export const registerSchema = Joi.object({
@@ -20,12 +21,27 @@ export const registerSchema = Joi.object({
   rating: Joi.object(),
   userTypeId: Joi.string(),
   objectsFavorites: Joi.array().items(Joi.string()),
-  avatar: Joi.object({ id: Joi.string(), link: Joi.string() }).required(),
+  avatar: Joi.object({ id: Joi.string(), link: Joi.string() }),
 }).options({ abortEarly: false });
 
 export const loginSchema = Joi.object({
   email: Joi.string().email().min(4).max(25).required(),
   password: Joi.string().min(6).max(32).required(),
+});
+
+export const newPasswordSchema = Joi.object({
+  newPassword: Joi.string().min(6).max(32).required(),
+  resetCode: Joi.string().min(4).max(4).required(),
+  email: Joi.string().email().min(4).max(25).required(),
+});
+
+export const verifyCodeSchema = Joi.object({
+  resetCode: Joi.string().min(4).max(4).required(),
+  email: Joi.string().email().min(4).max(25).required(),
+});
+
+export const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().min(4).max(25).required(),
 });
 
 export const patchSchema = Joi.object({
@@ -37,7 +53,7 @@ export const patchSchema = Joi.object({
   phone: Joi.string(),
   deleteFavorite: Joi.string(),
   addFavorite: Joi.string(),
-  avatar: Joi.object({ id: Joi.string(), link: Joi.string() }).required(),
+  avatar: Joi.object({ id: Joi.string(), link: Joi.string() }),
 }).options({ abortEarly: false });
 
 export const socialMediaSchema = Joi.object({
