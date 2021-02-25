@@ -38,7 +38,13 @@ export default class GlobalReq {
         let [type, ...values] = this.where[ele];
 
         if (type == "between") {
-          this.collection = this.collection.orderBy(ele).startAt(values[0]).endAt(values[1]);
+          if (typeof values[0] === "string")
+            this.collection = this.collection
+              .orderBy(ele)
+              .startAt((new Date(values[0])).getTime())
+              .endAt((new Date(values[1])).getTime());
+          else
+            this.collection = this.collection.orderBy(ele).startAt(values[0]).endAt(values[1]);
         } else if (type == "in" || type == "not-in" || type == "array-contains-any")
           this.collection = this.collection.where(ele, type, values);
         else
@@ -149,7 +155,13 @@ export default class GlobalReq {
       let resp: Array<any> = [];
 
       if (include) {
-        let partialResp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        let partialResp = datas.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          lossDate: doc.data().lossDate ? (new Date(doc.data().lossDate)).toISOString() : undefined,
+          createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+          updatedAt: doc.data().updatedAt ? (new Date(doc.data().updatedAt)).toISOString() : undefined,
+        }));
 
         for (let obj of include) {
           let { collection, fields } = obj ?? {};
@@ -185,7 +197,13 @@ export default class GlobalReq {
 
         resp = partialResp;
       } else
-        resp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        resp = datas.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          lossDate: doc.data().lossDate ? (new Date(doc.data().lossDate)).toISOString() : undefined,
+          createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+          updatedAt: doc.data().updatedAt ? (new Date(doc.data().updatedAt)).toISOString() : undefined,
+        }));
 
       return resp;
     } catch (error) {
@@ -204,7 +222,13 @@ export default class GlobalReq {
 
       if (!resp.exists) throw new Error();
 
-      let dataSigle = { id: resp.id, ...resp.data() }
+      let dataSigle = {
+        id: resp.id,
+        ...resp.data(),
+        lossDate: resp.data().lossDate ? (new Date(resp.data().lossDate)).toISOString() : undefined,
+        createdAt: resp.data().createdAt ? (new Date(resp.data().createdAt)).toISOString() : undefined,
+        updatedAt: resp.data().updatedAt ? (new Date(resp.data().updatedAt)).toISOString() : undefined,
+      }
 
       if (include) {
         for (let obj of include) {

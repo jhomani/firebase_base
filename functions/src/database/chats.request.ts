@@ -27,7 +27,12 @@ export default class ChatRequest extends GlobalReq {
       let resp: Array<any> = [];
 
       if (include) {
-        let partialResp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        let partialResp = datas.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          updatedAt: doc.data().updatedAt ? (new Date(doc.data().updatedAt)).toISOString() : undefined,
+          createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+        }));
 
         for (let obj of include) {
           let { collection, fields } = obj ?? {};
@@ -63,7 +68,12 @@ export default class ChatRequest extends GlobalReq {
 
         resp = partialResp;
       } else
-        resp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        resp = datas.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          updatedAt: doc.data().updatedAt ? (new Date(doc.data().updatedAt)).toISOString() : undefined,
+          createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+        }));
 
       return resp;
 

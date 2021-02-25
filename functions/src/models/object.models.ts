@@ -28,7 +28,7 @@ export const postSchema = Joi.object({
   latitude: Joi.number(),
   longitude: Joi.number(),
   images: Joi.array().items(Joi.object()).required(),
-  lossDate: Joi.number(),
+  lossDate: Joi.string().max(24).min(19),
   objectTypeId: Joi.string(),
   circumtances: Joi.string(),
   verify: Joi.bool(),

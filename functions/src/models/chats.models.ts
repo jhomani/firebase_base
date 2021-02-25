@@ -4,6 +4,7 @@ export const fieldsSchema: Array<string> = [
   "name",
   "description",
   "createdAt",
+  "updatedAt",
   "lastMessage",
   "objectId",
   "membersId"
