@@ -35,12 +35,17 @@ export default class GlobalReq {
   public setWhere() {
     for (let ele in this.where) {
       if (typeof this.where[ele] === "object") {
-        this.collection
-          .orderBy(ele).startAt(this.where[ele][0]).endAt(this.where[ele][1])
+        let [type, ...values] = this.where[ele];
 
-        break;
-      }
-      this.collection = this.collection.where(ele, '==', this.where[ele]);
+        if (type == "between") {
+          this.collection = this.collection.orderBy(ele).startAt(values[0]).endAt(values[1]);
+        } else if (type == "in" || type == "not-in" || type == "array-contains-any")
+          this.collection = this.collection.where(ele, type, values);
+        else
+          this.collection = this.collection.where(ele, type, values[0]);
+
+      } else
+        this.collection = this.collection.where(ele, '==', this.where[ele]);
     }
   }
 
