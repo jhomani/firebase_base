@@ -35,12 +35,23 @@ export default class GlobalReq {
   public setWhere() {
     for (let ele in this.where) {
       if (typeof this.where[ele] === "object") {
-        this.collection
-          .orderBy(ele).startAt(this.where[ele][0]).endAt(this.where[ele][1])
+        let [type, ...values] = this.where[ele];
 
-        break;
-      }
-      this.collection = this.collection.where(ele, '==', this.where[ele]);
+        if (type == "between") {
+          if (typeof values[0] === "string")
+            this.collection = this.collection
+              .orderBy(ele)
+              .startAt((new Date(values[0])).getTime())
+              .endAt((new Date(values[1])).getTime());
+          else
+            this.collection = this.collection.orderBy(ele).startAt(values[0]).endAt(values[1]);
+        } else if (type == "in" || type == "not-in" || type == "array-contains-any")
+          this.collection = this.collection.where(ele, type, values);
+        else
+          this.collection = this.collection.where(ele, type, values[0]);
+
+      } else
+        this.collection = this.collection.where(ele, '==', this.where[ele]);
     }
   }
 
@@ -144,7 +155,13 @@ export default class GlobalReq {
       let resp: Array<any> = [];
 
       if (include) {
-        let partialResp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        let partialResp = datas.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          lossDate: doc.data().lossDate ? (new Date(doc.data().lossDate)).toISOString() : undefined,
+          createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+          updatedAt: doc.data().updatedAt ? (new Date(doc.data().updatedAt)).toISOString() : undefined,
+        }));
 
         for (let obj of include) {
           let { collection, fields } = obj ?? {};
@@ -180,7 +197,13 @@ export default class GlobalReq {
 
         resp = partialResp;
       } else
-        resp = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        resp = datas.map((doc: any) => ({
+          id: doc.id,
+          ...doc.data(),
+          lossDate: doc.data().lossDate ? (new Date(doc.data().lossDate)).toISOString() : undefined,
+          createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+          updatedAt: doc.data().updatedAt ? (new Date(doc.data().updatedAt)).toISOString() : undefined,
+        }));
 
       return resp;
     } catch (error) {
@@ -199,7 +222,13 @@ export default class GlobalReq {
 
       if (!resp.exists) throw new Error();
 
-      let dataSigle = { id: resp.id, ...resp.data() }
+      let dataSigle = {
+        id: resp.id,
+        ...resp.data(),
+        lossDate: resp.data().lossDate ? (new Date(resp.data().lossDate)).toISOString() : undefined,
+        createdAt: resp.data().createdAt ? (new Date(resp.data().createdAt)).toISOString() : undefined,
+        updatedAt: resp.data().updatedAt ? (new Date(resp.data().updatedAt)).toISOString() : undefined,
+      }
 
       if (include) {
         for (let obj of include) {
@@ -287,11 +316,8 @@ export default class GlobalReq {
 
   async deleteDocument(id: string) {
     try {
-      const resp = await this.collection.doc(id).get();
+      await this.collection.doc(id).delete();
 
-
-      if (!resp.exists) throw new Error();
-      else await this.collection.doc(id).delete();
     } catch (error) {
       console.log(error.message)
 

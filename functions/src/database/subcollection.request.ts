@@ -100,7 +100,12 @@ export default class SubCollectionReq {
       let datas = (await collection.get()).docs;
       this.resetValues();
 
-      let resp: Array<any> = datas.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+      let resp: Array<any> = datas.map((doc: any) => ({
+        id: doc.id,
+        ...doc.data(),
+        updateAd: doc.data().updateAd ? (new Date(doc.data().updateAd)).toISOString() : undefined,
+        createdAt: doc.data().createdAt ? (new Date(doc.data().createdAt)).toISOString() : undefined,
+      }));
 
       return resp;
     } catch (error) {

@@ -33,7 +33,6 @@ export const countMethod = async (req: Request, res: Response) => {
 
 export const getMethod = async (req: Request, res: Response) => {
   try {
-    console.log(typeof req.query.filter);
     let filter = typeof req.query.filter === 'string' && JSON.parse(req.query.filter);
 
     const arrRes = await objectTypes.getCollection(filter);

@@ -1,9 +1,10 @@
 import GlobalReq from '../database/global.request';
-import { fieldsSchema, postSchema, patchSchema } from '../models/object.models';
+import { fieldsSchema, postSchema, patchSchema, adsSchema } from '../models/object.models';
 import { Request, Response } from "express";
 import { db, myBucket } from "../database/connect";
 import storage from "../storage/index";
 import { mainFuntion } from "../utils/publishToFacebook";
+import { updateAd } from "../utils/updateAdvertising";
 
 const objects = new GlobalReq('objects', fieldsSchema);
 
@@ -53,12 +54,13 @@ export const getMethod = async (req: Request, res: Response) => {
 export const getMyMethod = async (req: Request, res: Response) => {
   try {
     let filter = typeof req.query.filter === 'string' ? JSON.parse(req.query.filter) : {};
-
     filter.where = { userId: storage.getUserId() }
 
     const arrRes = await objects.getCollection(filter);
 
-    return res.json(arrRes);
+    const buildedRes = await updateAd(arrRes);
+
+    return res.json(buildedRes);
   } catch (err) {
     let msg = err.message;
 
@@ -68,7 +70,7 @@ export const getMyMethod = async (req: Request, res: Response) => {
 
 export const postMethod = async (req: Request, res: Response) => {
   try {
-    let { latitude, longitude, tags, ...others } = await postSchema.validateAsync(req.body);
+    let { latitude, longitude, tags, lossDate, ...others } = await postSchema.validateAsync(req.body);
     let value = { ...others };
 
     if (tags) {
@@ -81,9 +83,10 @@ export const postMethod = async (req: Request, res: Response) => {
         if (!result) return res.status(422).json({ message: `the tag '${tag}' is not found in tag's collection` })
       }
 
-      value = { ...value, tags }
+      value = { ...value, tags };
     }
 
+    if (lossDate) value = { ...value, lossDate: (new Date(lossDate)).getTime() };
 
     if (latitude && longitude) {
       let area = +(latitude * longitude).toFixed(6);
@@ -156,7 +159,8 @@ export const deleteMethod = async (req: Request, res: Response) => {
 
 export const publishInFacebookAds = async (req: Request, res: Response) => {
   try {
-    let resp = await mainFuntion();
+    let datas = await adsSchema.validateAsync(req.body);
+    let resp = await mainFuntion(datas);
 
     return res.json(resp);
   } catch (err) {
