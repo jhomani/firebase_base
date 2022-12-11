@@ -18,7 +18,7 @@ export const getMethod = async (req: Request, res: Response) => {
     ));
 
     return res.json({ response });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.details ? err.details : err
 
     return res.status(400).json({ msg });
@@ -29,7 +29,7 @@ export const postMethod = async (req: Request, res: Response) => {
   try {
 
     return res.json("data");
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
     let msg = err.details ? err.details : err.msg
 

@@ -1,5 +1,4 @@
 import { App } from "./app";
-
 import * as functions from "firebase-functions";
 
 function main() {
@@ -7,7 +6,6 @@ function main() {
   return app.getApp();
 }
 
-
-// let ap = main();
-// ap.listen(3000)
-export const app = functions.https.onRequest(main());
+let app = main();
+app.listen(3000)
+// export const app = functions.https.onRequest(main());

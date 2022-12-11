@@ -35,7 +35,7 @@ export async function sendVerifyEmail(email: string, url: string) {
       html: output
     });
 
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err)
 
     throw new Error("We have problems sending email");
@@ -76,7 +76,7 @@ export async function sendResetCodeEmail(email: string, code: string) {
       html: output
     });
 
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err)
 
     throw new Error("We have problems sending email");

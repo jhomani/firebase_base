@@ -206,7 +206,7 @@ export default class GlobalReq {
         }));
 
       return resp;
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No documents');
@@ -261,7 +261,7 @@ export default class GlobalReq {
         resp = dataSigle;
 
       return resp;
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No found document');
@@ -279,7 +279,7 @@ export default class GlobalReq {
       this.resetValues();
 
       return size;
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No documents');
@@ -293,7 +293,7 @@ export default class GlobalReq {
       });
 
       return ({ ...value, id: res.id });
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document');
@@ -307,7 +307,7 @@ export default class GlobalReq {
       });
 
       return { msg: "successful updated!" }
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document to update');
@@ -318,7 +318,7 @@ export default class GlobalReq {
     try {
       await this.collection.doc(id).delete();
 
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document to delete');

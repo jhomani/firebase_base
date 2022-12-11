@@ -145,7 +145,7 @@ export const mainFuntion = async (arg: any) => {
     })
 
     return { ad_status: data.effective_status }
-  } catch (er) {
+  } catch (er: Any) {
     console.log(er)
 
     throw new Error(er.message);

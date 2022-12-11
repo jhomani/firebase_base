@@ -13,7 +13,7 @@ export const singleGet = async (req: Request, res: Response) => {
     let doc = await uploadFiles.getSingleDoc(req.params.id);
 
     return res.json(doc);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -27,7 +27,7 @@ export const countMethod = async (req: Request, res: Response) => {
     const size = await uploadFiles.countDocuments(filter);
 
     return res.json({ count: size });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -42,7 +42,7 @@ export const getMethod = async (req: Request, res: Response) => {
     const arrRes = await uploadFiles.getCollection(filter);
 
     return res.json(arrRes);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -84,13 +84,13 @@ export const postMethod = async (req: any, res: Response) => {
 
         if (arrForResp.length == 1) return res.json(arrForResp[0]);
         else return res.json(arrForResp);
-      } catch (err) {
+      } catch (err: Any) {
         return res.status(422).json(err.details || { msg: err.message });
       }
     });
 
     busboy.end(req.rawBody);
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
     let msg = err.details ? err.details[0].message : err.msg
 
@@ -111,7 +111,7 @@ export const deleteMethod = async (req: Request, res: Response) => {
     await uploadFiles.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });

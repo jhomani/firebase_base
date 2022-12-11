@@ -11,7 +11,7 @@ export const singleGet = async (req: Request, res: Response) => {
     let doc = await tags.getSingleDoc(req.params.id);
 
     return res.json(doc);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -24,7 +24,7 @@ export const countMethod = async (req: Request, res: Response) => {
 
     const size = await tags.countDocuments(filter);
     return res.json({ count: size });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -39,7 +39,7 @@ export const getMethod = async (req: Request, res: Response) => {
     const arrRes = await tags.getCollection(filter);
 
     return res.json(arrRes);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -53,7 +53,7 @@ export const postMethod = async (req: Request, res: Response) => {
     let obj = await tags.addDocument(value);
     return res.json(obj);
 
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
     let msg = err.details ? err.details : err.message
 
@@ -69,7 +69,7 @@ export const patchMethod = async (req: Request, res: Response) => {
     let obj = await tags.setDocument(req.params.id, value);
 
     return res.json(obj);
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
     let msg = err.details ? err.details : err.message
 
@@ -85,7 +85,7 @@ export const deleteMethod = async (req: Request, res: Response) => {
     await tags.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });

@@ -21,7 +21,7 @@ export default class UserResquest extends GlobalReq {
 
         return targetObj;
       }
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error("incorret credentials");
@@ -47,7 +47,7 @@ export default class UserResquest extends GlobalReq {
       await this.collection.doc(id).update(data);
 
       return { msg: "successful updated!" }
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document to update');

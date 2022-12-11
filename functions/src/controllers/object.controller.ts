@@ -17,7 +17,7 @@ export const singleGet = async (req: Request, res: Response) => {
     let doc = await objects.getSingleDoc(req.params.id, filter);
 
     return res.json(doc);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -30,7 +30,7 @@ export const countMethod = async (req: Request, res: Response) => {
 
     const size = await objects.countDocuments(filter);
     return res.json({ count: size });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -44,7 +44,7 @@ export const getMethod = async (req: Request, res: Response) => {
     const arrRes = await objects.getCollection(filter);
 
     return res.json(arrRes);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -61,7 +61,7 @@ export const getMyMethod = async (req: Request, res: Response) => {
     const buildedRes = await updateAd(arrRes);
 
     return res.json(buildedRes);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -97,7 +97,7 @@ export const postMethod = async (req: Request, res: Response) => {
     let obj = await objects.addDocument({ ...value, userId: storage.getUserId(), createdAt: Date.now() });
     return res.json(obj);
 
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
     let msg = err.details ? err.details : err.message
 
@@ -134,7 +134,7 @@ export const patchMethod = async (req: Request, res: Response) => {
     let obj = await objects.setDocument(req.params.id, { ...others, userId: storage.getUserId() });
 
     return res.json(obj);
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
     let msg = err.details ? err.details : err.message
 
@@ -150,7 +150,7 @@ export const deleteMethod = async (req: Request, res: Response) => {
     await objects.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -163,7 +163,7 @@ export const publishInFacebookAds = async (req: Request, res: Response) => {
     let resp = await mainFuntion(datas);
 
     return res.json(resp);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -189,7 +189,7 @@ export const deleteFilesMethod = async (req: Request, res: Response) => {
     await objects.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });

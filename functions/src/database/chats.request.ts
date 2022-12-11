@@ -77,7 +77,7 @@ export default class ChatRequest extends GlobalReq {
 
       return resp;
 
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No documents');
@@ -91,7 +91,7 @@ export default class ChatRequest extends GlobalReq {
       this.resetValues();
 
       return size;
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No documents');

@@ -108,7 +108,7 @@ export default class SubCollectionReq {
       }));
 
       return resp;
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No documents');
@@ -123,7 +123,7 @@ export default class SubCollectionReq {
 
       if (!resp.exists) throw new Error();
       else return ({ id: resp.id, ...resp.data() });
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No found document');
@@ -143,7 +143,7 @@ export default class SubCollectionReq {
       this.resetValues();
 
       return size;
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No documents');
@@ -160,7 +160,7 @@ export default class SubCollectionReq {
       });
 
       return ({ ...value, id: res.id });
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document');
@@ -177,7 +177,7 @@ export default class SubCollectionReq {
       });
 
       return { msg: "successful updated!" }
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document to update');
@@ -193,7 +193,7 @@ export default class SubCollectionReq {
 
       if (!resp.exists) throw new Error();
       else await collection.doc(id).delete();
-    } catch (error) {
+    } catch (error: Any) {
       console.log(error.message)
 
       throw new Error('No document to delete');

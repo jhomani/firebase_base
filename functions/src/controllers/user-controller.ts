@@ -1,6 +1,5 @@
 import UserResquest from '../database/user.request';
 import { Request, Response } from "express";
-import secret from '../../secret';
 import bcrypt from 'bcrypt';
 import JWT from 'jsonwebtoken';
 import storage from "../storage/index";
@@ -24,7 +23,7 @@ export const singleGet = async (req: Request, res: Response) => {
     const { password, ...others } = await users.getSingleDoc(req.params.id);
 
     return res.json(others);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -38,7 +37,7 @@ export const countMethod = async (req: Request, res: Response) => {
     const size = await users.countDocuments(filter);
 
     return res.json({ count: size });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -55,7 +54,7 @@ export const getMeUser = async (req: Request, res: Response) => {
       await users.setDocument(storage.getUserId(), { verifyStatus: 'OLD_APPROVED' });
 
     return res.json(others);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -71,7 +70,7 @@ export const getMethod = async (req: Request, res: Response) => {
     let builded = arrRes.map(({ password, ...others }) => ({ ...others }))
 
     return res.json(builded);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -92,13 +91,13 @@ export const loginMethod = async (req: Request, res: Response) => {
     if (result) {
       if (obj.verifyStatus !== "WAITING" && obj.verifyStatus) {
         const claims = { sub: obj.id, name: obj.name }
-
+        const secret = String(process.env.TOKEN_SECRET);
         const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
 
         return res.json({ authToken: jwt });
       } else throw new Error('email is not verified')
     } else throw new Error('incorrent credentials')
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json(msg);
@@ -125,10 +124,11 @@ export const loginSocialMedia = async (req: Request, res: Response) => {
       obj = { ...emailExist.docs[0].data(), id: emailExist.docs[0].id }
 
     const claims = { sub: obj.id, name: obj.firstName }
+    const secret = String(process.env.TOKEN_SECRET);
     const jwt = JWT.sign(claims, secret, { expiresIn: '7h' });
 
     return res.json({ authToken: jwt });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json(msg);
@@ -138,6 +138,7 @@ export const loginSocialMedia = async (req: Request, res: Response) => {
 
 export const verifyEmail = async (req: Request, res: Response) => {
   try {
+    const secret = String(process.env.TOKEN_SECRET);
     let decode: any = await verify(req.params.token, secret);
 
     if (decode) {
@@ -149,7 +150,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     } else {
       res.status(401).send('you are not authenticated to this route');
     }
-  } catch (err) {
+  } catch (err: Any) {
     console.log(err);
 
     res.status(401).send(err.message)
@@ -179,12 +180,13 @@ export const registerMethod = async (req: Request, res: Response) => {
     });
 
     const claims = { sub: id, name: 'verify' }
+    const secret = String(process.env.TOKEN_SECRET);
     const jwt = JWT.sign(claims, secret, { expiresIn: '24h' });
 
     await sendVerifyEmail(email, `${process.env.LOCAL_URL}/users/verify-email/${jwt}`)
 
     return res.json(others);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json(msg);
@@ -249,7 +251,7 @@ export const getMyFavorites = async (req: Request, res: Response) => {
 
     }
     return res.json(resp || []);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -279,7 +281,7 @@ export const patchMethod = async (req: Request, res: Response) => {
       obj = await users.setWithArray(req.params.id, { ...others });
 
     return res.json(obj);
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.details ? err.details : err.message
 
     if (err.details) return res.status(422).json(msg);
@@ -299,7 +301,7 @@ export const resetPassowrd = async (req: Request, res: Response) => {
     await users.setDocument(id, { resetCode: code });
 
     return res.json({ msg: "successful send email" });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -316,7 +318,7 @@ export const verifyResetCode = async (req: Request, res: Response) => {
       return res.json({ msg: "corrent reset code" });
     } else
       return res.status(406).json({ msg: "incorrent Code" });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -341,7 +343,7 @@ export const newPassowrd = async (req: Request, res: Response) => {
     } else
       return res.status(401).json({ msg: "incorrent Code" });
 
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -355,7 +357,7 @@ export const deleteMethod = async (req: Request, res: Response) => {
     await users.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
@@ -380,7 +382,7 @@ export const deleteFileMethod = async (req: Request, res: Response) => {
     await users.deleteDocument(req.params.id);
 
     return res.json({ msg: 'success deleted' });
-  } catch (err) {
+  } catch (err: Any) {
     let msg = err.message;
 
     return res.status(400).json({ msg });
