@@ -5,7 +5,7 @@ const serviceAccount = require('../../permissions.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://its-mine-f713b-default-rtdb.firebaseio.com",
+  //databaseURL: "https://its-mine-f713b-default-rtdb.firebaseio.com",
   // storageBucket: "gs://its-mine-f713b.appspot.com",
 });
 let storage = new Storage({

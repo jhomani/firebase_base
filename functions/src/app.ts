@@ -60,7 +60,7 @@ export class App {
   }
 
   async listen() {
-    await this.app.listen(this.app.get("port"));
+    this.app.listen(this.app.get("port"));
     console.log("SERVER ON PORT", this.app.get("port"));
   }
   getApp() {
